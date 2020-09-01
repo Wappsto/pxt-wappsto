@@ -1,0 +1,16 @@
+{
+    "name": "pxt-wappsto",
+    "version": "0.0.1",
+    "description": "MakeCode extension for Wappsto NB-IoT module",
+    "dependencies": {
+        "core": "*"
+    },
+    "files": [
+        "README.md",
+        "main.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true
+}

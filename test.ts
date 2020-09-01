@@ -1,0 +1,3 @@
+{
+    Wappsto.sendButton(Button.A)
+}
