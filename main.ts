@@ -19,15 +19,57 @@ namespace Wappsto {
 
 
     /**
-     * Connect to NB IoT
+     * Connects to the Wappsto NB IoT Module
      */
+    //% weight=100
+    //% blockId="wapp_microbit_connect" block="connect to the Wappsto NB IoT Module"
     export function connect(): void {
+        if(connected) {
+            return;
+        }
+
+        connected = true;
         serial.redirect(
             SerialPin.P8,
             SerialPin.P1,
             BaudRate.BaudRate115200
         )
+        serial.setRxBufferSize(200)
+        serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+            let data = serial.readLine();
+            let j = parseJSON(data);
+            if(j[0] == "microbit") {
+                switch(j[1]) {
+                    case "display":
+                        basic.showString(j[2]);
+                        break;
+                }
+            }
+        });
         basic.pause(100)
+    }
+
+    function parseJSON(data: string): Array<string> {
+        let res = ["","",""]
+        if(data.indexOf("{") == 0 && data.indexOf("}") != -1) {
+            data = data.replace("{","").replace("}","").replaceAll("\"","")
+            let aData = data.split(",");
+            for(let i=0; i < aData.length; i++) {
+                let arr = aData[i].split(":");
+                switch(arr[0]) {
+                    case "device":
+                        res[0] = arr[1]
+                        break
+                    case "value":
+                        res[1] = arr[1]
+                        break
+                    case "data":
+                        res[2] = arr[1];
+                        break
+                }
+            }
+        }
+        return res;
     }
 
     function writeToSerial(device: string, value: string, data: string): void {
@@ -42,8 +84,9 @@ namespace Wappsto {
      * Send the state of Button %button to Wappsto.
      * @param button Button, eg: "A"
      */
-    //% weight=100
+    //% weight=80
     //% blockId="wapp_button" block="send button %button to Wappsto"
+    //% advanced=true
     export function sendButton(button: Button): void {
         let name = 'Button A'
         if(button == Button.B) {
@@ -56,7 +99,7 @@ namespace Wappsto {
      * Send the value of Microbit Sensor %sensor to Wappsto.
      * @param sensor Sensor, eg: "Temperature"
      */
-    //% weight=100
+    //% weight=90
     //% blockId="wapp_microbit_value" block="send value of %sensor to Wappsto"
     export function sendMicrobitValue(sensor: Sensor): void {
         let name = null
@@ -92,6 +135,7 @@ namespace Wappsto {
      * A simple event taking an function handler
      */
     //% block="on control state update event"
+    //% advanced=true
     export function onEvent(handler: () => void) {
 
     }
@@ -102,7 +146,6 @@ namespace Wappsto {
     //% block="on value $handlerArg1 change event"
     //% draggableParameters
     //% advanced=true
-
     export function onEventWithHandlerArgs(handler: (handlerArg: string) => void) {
 
     }
