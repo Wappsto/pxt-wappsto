@@ -1,13 +1,27 @@
-enum Sensor {
-      //% block="temperature"
-      Temperature = 1,
-      //% block="light level"
-      LightLevel = 2,
-      //% block="compass heading"
-      CompassHeading = 3
+enum WappstoCommand {
+    //% block="Save"
+    Save = 1,
+    //% block="Clean"
+    Clean = 2,
+}
 
-    }
+enum WappstoValueTemplate {
+    //% block="Temperature"
+    Temperature,
+    //% block="Light"
+    Light,
+    //% block="Compass"
+    Compass,
+    //% block="Acceleration"
+    Acceleration,
 
+    Rotation,
+    Magnetic,
+    //% block="Number"
+    Number,
+
+
+}
 
 /**
  * MakeCode extension for Wappsto NB-IoT module
@@ -15,41 +29,9 @@ enum Sensor {
 //% color=#03a6ef weight=90 icon="\uf213" block="Wappsto"
 namespace Wappsto {
     let connected = false
-    let device = 'microbit'
+    let handlers: any[] = []
 
-
-    /**
-     * Connects to the Wappsto NB IoT Module
-     */
-    //% weight=100
-    //% blockId="wapp_microbit_connect" block="connect to the Wappsto NB IoT Module"
-    export function connect(): void {
-        if(connected) {
-            return;
-        }
-
-        connected = true;
-        serial.redirect(
-            SerialPin.P8,
-            SerialPin.P1,
-            BaudRate.BaudRate115200
-        )
-        serial.setRxBufferSize(200)
-        serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
-            let data = serial.readLine();
-            let j = parseJSON(data);
-            if(j[0] == "microbit") {
-                switch(j[1]) {
-                    case "display":
-                        basic.showString(j[2]);
-                        break;
-                }
-            }
-        });
-        basic.pause(100)
-    }
-
-    function parseJSON(data: string): Array<string> {
+    function parseJSON(data: string): Array<any> {
         let res = ["","",""]
         if(data.indexOf("{") == 0 && data.indexOf("}") != -1) {
             data = data.replace("{","").replace("}","").replaceAll("\"","")
@@ -72,82 +54,192 @@ namespace Wappsto {
         return res;
     }
 
-    function writeToSerial(device: string, value: string, data: string): void {
+    function writeCommand(cmd: string): void {
+        writeToSerial('{"command":"'+cmd+'"}\n');
+    }
+
+    function writeValueUpdate(device: number, value: number, data: string): void {
+        writeToSerial('{"device":'+device.toString()+',"value":'+value.toString()+',"data":"'+data+'"}\n');
+    }
+
+    function writeToSerial(data: string): void {
         if(!connected) {
-            connect()
+            connect();
         }
-        serial.writeString('{"device":"'+device+'","value":"'+value+'","data":"'+data+'"}\n')
+        serial.writeString(data);
+        basic.pause(100);
+    }
+
+    /**
+     * Connects to the Wappsto NB IoT Module
+     */
+    //% weight=100
+    //% blockId="wapp_microbit_connect" block="connect to the Wappsto NB IoT Module"
+    export function connect(): void {
+        if(connected) {
+            return;
+        }
+
+        connected = true;
+        serial.redirect(
+            SerialPin.P8,
+            SerialPin.P1,
+            BaudRate.BaudRate115200
+        )
+        serial.setRxBufferSize(200)
+        serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+            let data = serial.readLine();
+            let j = parseJSON(data);
+            let index: number = j[1]
+            if(j[0] == 1) {
+                if(handlers[index] != null) {
+                    handlers[index](j[2]);
+                }
+            }
+        });
         basic.pause(100)
     }
 
     /**
-     * Send the state of Button %button to Wappsto.
-     * @param button Button, eg: "A"
-     */
-    //% weight=80
-    //% blockId="wapp_button" block="send button %button to Wappsto"
-    //% advanced=true
-    export function sendButton(button: Button): void {
-        let name = 'Button A'
-        if(button == Button.B) {
-            name = 'Button B'
-        }
-        writeToSerial(device, name, input.buttonIsPressed(button) ? "1" : "0")
-    }
-
-    /**
-     * Send the value of Microbit Sensor %sensor to Wappsto.
-     * @param sensor Sensor, eg: "Temperature"
+     * Configure wappsto device.
+     * @param name The name of the device
      */
     //% weight=90
-    //% blockId="wapp_microbit_value" block="send value of %sensor to Wappsto"
-    export function sendMicrobitValue(sensor: Sensor): void {
-        let name = null
-        let value = null
-        switch(sensor) {
-            case Sensor.Temperature:
-                name = 'temperature';
-                value = input.temperature();
+    //% blockId="wapp_configure_device" block="set Wappsto device name to %name"
+    //% name.defl=MicroBit
+    export function configureDevice(name: string): void {
+        let device = 1;
+        writeToSerial('{"device":'+device.toString()+',"name":"'+name+'"}\n')
+    }
+
+    /**
+     * Configure a wappsto value.
+     */
+    //% weight=80
+    //% blockId="wapp_configure_value"
+    //% block="setup Wappsto value %valueID with %name as %type"
+    //% valueID.min=1 valueID.max=20 valueID.defl=1
+    export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
+        switch(type) {
+            case WappstoValueTemplate.Temperature:
+                configureNumberValue(valueID, name, "Temperature", -5, 50, 1, "C°");
                 break;
-            case Sensor.LightLevel:
-                name = 'light_level';
-                value = input.lightLevel();
+            case WappstoValueTemplate.Light:
+                configureNumberValue(valueID, name, "Light", 0, 255, 1, "lx");
                 break;
-            case Sensor.CompassHeading:
-                name = 'compass_heading';
-                value = input.compassHeading();
+            case WappstoValueTemplate.Compass:
+                configureNumberValue(valueID, name, "Compass", 0, 360, 1, "°");
+                break;
+            case WappstoValueTemplate.Acceleration:
+                configureNumberValue(valueID, name, "Acceleration", -1024, 1024, 1, "mg");
+                break;
+            case WappstoValueTemplate.Rotation:
+                configureNumberValue(valueID, name, "Rotation", 0, 360, 1, "°");
+                break;
+            case WappstoValueTemplate.Magnetic:
+                configureNumberValue(valueID, name, "Magnetic Force", -40, 40, 0.001, "µT");
+                break;
+            case WappstoValueTemplate.Number:
+                configureNumberValue(valueID, name, "Number", 0, 255, 1, "number");
                 break;
         }
-        sendToWappsto(value, device, name)
     }
 
     /**
-     * Send the state of %input to Wappsto.
+     * Configure wappsto number value.
      */
-    //% weight=100
-    //% blockId="wapp_custom_value" block="send %input to Wappsto device %deviceName as %valueName"
+    //% weight=80
+    //% blockId="wapp_configure_number_value"
+    //% block="setup Wappsto number value %valueID Name: %name Type: %type Min: %min Max: %max Step: %step Unit: %unit"
     //% advanced=true
-    export function sendToWappsto(input: number, deviceName: string, valueName: string): void {
-        writeToSerial(deviceName, valueName, input.toString())
+    //% valueID.min=1 valueID.max=15 valueID.defl=1
+    export function configureNumberValue(valueID: number, name: string, type: string, min: number, max: number, step: number, unit: string): void {
+        let device = 1;
+        let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
+        data += '"name":"'+name+'","type": "'+type+'",';
+        data += '"min":'+min.toString()+',"max":'+max.toString()+',"step":'+step+',';
+        data += '"unit":"'+unit+'"';
+        writeToSerial('{'+data+'}\n');
     }
 
     /**
-     * A simple event taking an function handler
+     * Configure wappsto string value.
      */
-    //% block="on control state update event"
+    //% weight=70
+    //% blockId="wapp_configure_string_value"
+    //% block="setup Wappsto string value %valueID Name: %name Type: %type"
     //% advanced=true
-    export function onEvent(handler: () => void) {
-
+    //% valueID.min=16 valueID.max=20 valueID.defl=16
+    export function configureStringValue(valueID: number, name: string, type: string): void {
+        let device = 1;
+        let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
+        data += '"name":"'+name+'","type": "'+type+'"';
+        writeToSerial('{'+data+'}\n');
     }
 
     /**
-     * Event handler for Wappsto events. You can refer to them using $NAME.
+     * Send a command to Wappsto.
+     * @param cmd The command to send to wappsto
      */
-    //% block="on value $handlerArg1 change event"
+    //% weight=60
+    //% blockId="wapp_command" block="Send command %cmd to Wappsto"
+    export function sendCommandToWappsto(cmd: WappstoCommand): void {
+        switch(cmd) {
+            case WappstoCommand.Clean:
+                writeCommand("clean");
+                break;
+            case WappstoCommand.Save:
+                writeCommand("save");
+                break;
+        }
+    }
+
+    /**
+     * Send the state of a number value to Wappsto.
+     * @param input The new value to send
+     * @param valueID The id of the value to send to
+     */
+    //% weight=50
+    //% blockId="wapp_number_value" block="send number %input to Wappsto for Value %valueID"
+    //% valueID.min=1 valueID.max=15 valueID.defl=1
+    export function sendNumberToWappsto(input: number, valueID: number): void {
+        writeValueUpdate(1, valueID, input.toString())
+    }
+
+    /**
+     * Send the state of a string value to Wappsto.
+     * @param input The new value to send
+     * @param valueID The id of the value to send to
+     */
+    //% weight=50
+    //% blockId="wapp_string_value" block="send string %input to Wappsto for Value %valueID"
+    //% valueID.min=16 valueID.max=20 valueID.defl=16
+    export function sendStringToWappsto(input: string, valueID: number): void {
+        writeValueUpdate(1, valueID, input)
+    }
+
+    /**
+     * Event handler for Wappsto number events.
+     */
+    //% blockID="wappsto_number_event"
+    //% block="on number value %valueID received"
     //% draggableParameters
     //% advanced=true
-    export function onEventWithHandlerArgs(handler: (handlerArg: string) => void) {
+    //% valueID.min=1 valueID.max=15 valueID.defl=1
+    export function onNumberEvent(valueID: number, handler: (receviedNumber: number) => void) {
+        handlers[valueID] = handler;
+    }
 
+    /**
+     * Event handler for Wappsto string events.
+     */
+    //% blockID="wappsto_string_event"
+    //% block="on string value %valueID received"
+    //% draggableParameters
+    //% advanced=true
+    //% valueID.min=16 valueID.max=20 valueID.defl=16
+    export function onStringEvent(valueID: number, handler: (receviedString: string) => void) {
+        handlers[valueID] = handler;
     }
 
 }
