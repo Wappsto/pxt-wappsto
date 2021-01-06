@@ -3,7 +3,8 @@
     "version": "0.0.1",
     "description": "MakeCode extension for Wappsto NB-IoT module",
     "dependencies": {
-        "core": "*"
+        "core": "*",
+        "microphone": "*"
     },
     "files": [
         "README.md",

@@ -83,7 +83,7 @@ namespace Wappsto {
         connected = true;
         serial.redirect(
             SerialPin.P8,
-            SerialPin.P1,
+            SerialPin.P16,
             BaudRate.BaudRate115200
         )
         serial.setRxBufferSize(200)
@@ -117,8 +117,9 @@ namespace Wappsto {
      */
     //% weight=80
     //% blockId="wapp_configure_value"
-    //% block="setup Wappsto value %valueID with %name as %type"
-    //% valueID.min=1 valueID.max=20 valueID.defl=1
+    //% block="setup Wappsto value %valueID with name %name as %type"
+    //% valueID.min=1 valueID.max=15 valueID.defl=1
+    //% name.defl="MyValue"
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
         switch(type) {
             case WappstoValueTemplate.Temperature:
