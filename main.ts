@@ -29,6 +29,9 @@ enum WappstoValueTemplate {
 //% color=#03a6ef weight=90 icon="\uf213" block="Wappsto"
 namespace Wappsto {
     let connected = false
+    let link = "i2c"
+    let i2cDevice = 0x11
+    let bufferSize = 200
     let handlers: any[] = []
 
     function parseJSON(data: string): Array<any> {
@@ -55,20 +58,42 @@ namespace Wappsto {
     }
 
     function writeCommand(cmd: string): void {
-        writeToSerial('{"command":"'+cmd+'"}\n');
+        writeToWappstobit('{"command":"'+cmd+'"}');
     }
 
     function writeValueUpdate(device: number, value: number, data: string): void {
-        writeToSerial('{"device":'+device.toString()+',"value":'+value.toString()+',"data":"'+data+'"}\n');
+        writeToWappstobit('{"device":'+device.toString()+',"value":'+value.toString()+',"data":"'+data+'"}');
     }
 
-    function writeToSerial(data: string): void {
+    function writeToWappstobit(data: string): void {
         if(!connected) {
             connect();
         }
-        serial.writeString(data);
+        if(link=="serial") {
+            serial.writeString(data+'\n');
+        } else if(link=="i2c") {
+            let buffer = pins.createBuffer(data.length + 1);
+            buffer.setNumber(NumberFormat.UInt8LE, data.length, 0x00)
+            for (let i = 0; i < data.length; i++) {
+                buffer.setNumber(NumberFormat.UInt8LE, i, data.charCodeAt(i))
+            }
+            serial.writeString('BitTx ('+buffer.length+'): '+data+'\n')
+            pins.i2cWriteBuffer(i2cDevice, buffer, false)
+        }
         basic.pause(100);
     }
+
+
+    function receiveHandler(data: string): void {
+        let j = parseJSON(data);
+        let index: number = j[1]
+        if(j[0] == 1) {
+            if(handlers[index] != null) {
+                handlers[index](j[2]);
+            }
+        }
+    }
+
 
     /**
      * Connects to the Wappsto NB IoT Module
@@ -81,22 +106,34 @@ namespace Wappsto {
         }
 
         connected = true;
-        serial.redirect(
-            SerialPin.P8,
-            SerialPin.P16,
-            BaudRate.BaudRate115200
-        )
-        serial.setRxBufferSize(200)
-        serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
-            let data = serial.readLine();
-            let j = parseJSON(data);
-            let index: number = j[1]
-            if(j[0] == 1) {
-                if(handlers[index] != null) {
-                    handlers[index](j[2]);
+        if(link=="serial") {
+            serial.redirect(
+                SerialPin.P8,
+                SerialPin.P16,
+                BaudRate.BaudRate115200
+            )
+            serial.setRxBufferSize(200)
+            serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+                let data = serial.readLine();
+                receiveHandler(data)
+            });
+        } else if(link=="i2c") {
+            control.inBackground(() => {
+                while (true) {
+                    let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
+                    for (let i=0; i<bufr.length; i++) {
+                        if (bufr.getNumber(NumberFormat.Int8LE, i) == 0x00 && i > 0) {
+                            let data = bufr.slice(0,i).toString();
+                            receiveHandler(data)
+                            serial.writeString('BitRx ('+data.length+'): ' + data+ '\n')
+                            break;
+                        }
+                    }
+                    basic.pause(100)
                 }
-            }
-        });
+            })
+        }
+
         basic.pause(100)
     }
 
@@ -109,7 +146,7 @@ namespace Wappsto {
     //% name.defl=MicroBit
     export function configureDevice(name: string): void {
         let device = 1;
-        writeToSerial('{"device":'+device.toString()+',"name":"'+name+'"}\n')
+        writeToWappstobit('{"device":'+device.toString()+',"name":"'+name+'"}')
     }
 
     /**
@@ -160,7 +197,7 @@ namespace Wappsto {
         data += '"name":"'+name+'","type": "'+type+'",';
         data += '"min":'+min.toString()+',"max":'+max.toString()+',"step":'+step+',';
         data += '"unit":"'+unit+'"';
-        writeToSerial('{'+data+'}\n');
+        writeToWappstobit('{'+data+'}');
     }
 
     /**
@@ -175,7 +212,7 @@ namespace Wappsto {
         let device = 1;
         let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
         data += '"name":"'+name+'","type": "'+type+'"';
-        writeToSerial('{'+data+'}\n');
+        writeToWappstobit('{'+data+'}');
     }
 
     /**
