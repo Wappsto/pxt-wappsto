@@ -24,11 +24,12 @@ enum WappstoValueTemplate {
 }
 
 /**
- * MakeCode extension for Wappsto NB-IoT module
+ * MakeCode extension for the Seluxit Wappsto:bit extension module
  */
 //% color=#03a6ef weight=90 icon="\uf213" block="Wappsto"
 namespace Wappsto {
     let connected = false
+    let bitName = ""
     let link = "i2c"
     let i2cDevice = 0x11
     let bufferSize = 200
@@ -67,7 +68,7 @@ namespace Wappsto {
 
     function writeToWappstobit(data: string): void {
         if(!connected) {
-            connect();
+            connect(bitName);
         }
         if(link=="serial") {
             serial.writeString(data+'\n');
@@ -96,16 +97,19 @@ namespace Wappsto {
 
 
     /**
-     * Connects to the Wappsto NB IoT Module
+     * Connects to Wappsto using Wappsto:bit
+     * @param name The name of your Micro:bit
      */
     //% weight=100
-    //% blockId="wapp_microbit_connect" block="connect to the Wappsto NB IoT Module"
-    export function connect(): void {
+    //% blockId="wapp_microbit_connect" block="connect %name to Wappsto by Seluxit"
+    //% name.defl=MicroBit
+    export function connect(name: string): void {
         if(connected) {
             return;
         }
 
         connected = true;
+        bitName = name;
         if(link=="serial") {
             serial.redirect(
                 SerialPin.P8,
@@ -131,26 +135,17 @@ namespace Wappsto {
                     }
                     basic.pause(100)
                 }
-            })
+            });
         }
 
         basic.pause(100)
-    }
 
-    /**
-     * Configure wappsto device.
-     * @param name The name of the device
-     */
-    //% weight=90
-    //% blockId="wapp_configure_device" block="set Wappsto device name to %name"
-    //% name.defl=MicroBit
-    export function configureDevice(name: string): void {
         let device = 1;
         writeToWappstobit('{"device":'+device.toString()+',"name":"'+name+'"}')
     }
 
     /**
-     * Configure a wappsto value.
+     * Configure a Wappsto value.
      */
     //% weight=80
     //% blockId="wapp_configure_value"
@@ -184,11 +179,12 @@ namespace Wappsto {
     }
 
     /**
-     * Configure wappsto number value.
+     * Configure Wappsto number value.
      */
     //% weight=80
     //% blockId="wapp_configure_number_value"
-    //% block="setup Wappsto number value %valueID Name: %name Type: %type Min: %min Max: %max Step: %step Unit: %unit"
+    //% block="setup Wappsto number value %valueID Name: %name Type: %type||Min: %min Max: %max Step: %step Unit: %unit"
+    //% expandableArgumentMode="toggle"
     //% advanced=true
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     export function configureNumberValue(valueID: number, name: string, type: string, min: number, max: number, step: number, unit: string): void {
@@ -201,7 +197,7 @@ namespace Wappsto {
     }
 
     /**
-     * Configure wappsto string value.
+     * Configure Wappsto string value.
      */
     //% weight=70
     //% blockId="wapp_configure_string_value"
@@ -220,7 +216,7 @@ namespace Wappsto {
      * @param cmd The command to send to wappsto
      */
     //% weight=60
-    //% blockId="wapp_command" block="Send command %cmd to Wappsto"
+    //% blockId="wapp_command" block="send command %cmd to Wappsto"
     export function sendCommandToWappsto(cmd: WappstoCommand): void {
         switch(cmd) {
             case WappstoCommand.Clean:
@@ -235,7 +231,7 @@ namespace Wappsto {
     /**
      * Send the state of a number value to Wappsto.
      * @param input The new value to send
-     * @param valueID The id of the value to send to
+     * @param valueID The id of the value to send
      */
     //% weight=50
     //% blockId="wapp_number_value" block="send number %input to Wappsto for Value %valueID"
@@ -247,7 +243,7 @@ namespace Wappsto {
     /**
      * Send the state of a string value to Wappsto.
      * @param input The new value to send
-     * @param valueID The id of the value to send to
+     * @param valueID The id of the value to send
      */
     //% weight=50
     //% blockId="wapp_string_value" block="send string %input to Wappsto for Value %valueID"
@@ -260,7 +256,7 @@ namespace Wappsto {
      * Event handler for Wappsto number events.
      */
     //% blockID="wappsto_number_event"
-    //% block="on number value %valueID received"
+    //% block="on number value %valueID received from Wappsto"
     //% draggableParameters
     //% advanced=true
     //% valueID.min=1 valueID.max=15 valueID.defl=1
@@ -272,7 +268,7 @@ namespace Wappsto {
      * Event handler for Wappsto string events.
      */
     //% blockID="wappsto_string_event"
-    //% block="on string value %valueID received"
+    //% block="on string value %valueID received from Wappsto"
     //% draggableParameters
     //% advanced=true
     //% valueID.min=16 valueID.max=20 valueID.defl=16
