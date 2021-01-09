@@ -125,14 +125,17 @@ namespace Wappsto {
             control.inBackground(() => {
                 while (true) {
                     let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
-                    for (let i=0; i<bufr.length; i++) {
-                        if (bufr.getNumber(NumberFormat.Int8LE, i) == 0x00 && i > 0) {
+                    let i = 0;
+                    while (bufr[i] != 255) {
+                        if (bufr[i] == 0x00) {
                             let data = bufr.slice(0,i).toString();
-                            receiveHandler(data)
                             serial.writeString('BitRx ('+data.length+'): ' + data+ '\n')
+                            receiveHandler(data+'\n')
                             break;
                         }
+                        i++;
                     }
+
                     basic.pause(100)
                 }
             });
