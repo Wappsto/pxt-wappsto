@@ -19,9 +19,15 @@ enum WappstoValueTemplate {
     Magnetic,
     //% block="Number"
     Number,
-
-
 }
+
+enum WappstoTransmit {
+    //% block="OnChange"
+    OnChange,
+    //% block="ASAP"
+    ASAP,
+}
+
 
 /**
  * MakeCode extension for the Seluxit Wappsto:bit extension module
@@ -35,6 +41,7 @@ namespace Wappsto {
     let bufferSize = 200
     let handlers: any[] = []
     let model: { sent: boolean, model: string }[] = []
+    let old_value: any[] = []
 
     function parseJSON(data: string): Array<any> {
         let res = ["", "","",""]
@@ -174,6 +181,8 @@ namespace Wappsto {
     //% block="setup Wappsto value %valueID with name %name as %type"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyValue"
+    //% type.defl=WappstoValueTemplate.Number
+
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
         switch(type) {
             case WappstoValueTemplate.Temperature:
@@ -209,8 +218,10 @@ namespace Wappsto {
     //% expandableArgumentMode="toggle"
     //% advanced=true
     //% valueID.min=1 valueID.max=15 valueID.defl=1
-    export function configureNumberValue(valueID: number, name: string, type: string, min: number, max: number, step: number, unit: string): void {
+    //% name.defl="MyNumber" type.defl="Number" min.defl=0 max.defl=255 step.defl=1
+    export function configureNumberValue(valueID: number, name: string, type: string, min: number = 0, max: number = 255, step: number = 1, unit: string = null): void {
         let device = 1;
+        if(unit==null) unit = "";
         let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
         data += '"name":"'+name+'","type": "'+type+'",';
         data += '"min":'+min.toString()+',"max":'+max.toString()+',"step":'+step+',';
@@ -223,9 +234,10 @@ namespace Wappsto {
      */
     //% weight=90
     //% blockId="wapp_configure_string_value"
-    //% block="setup Wappsto string value %valueID Name: %name Type: %type"
+    //% block="setup Wappsto string %valueID with name %name as type %type"
     //% advanced=true
     //% valueID.min=16 valueID.max=20 valueID.defl=16
+    //% name.defl="MyString" type.defl="String"
     export function configureStringValue(valueID: number, name: string, type: string): void {
         let device = 1;
         let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
@@ -239,9 +251,17 @@ namespace Wappsto {
      * @param valueID The id of the value to send
      */
     //% weight=50
-    //% blockId="wapp_number_value" block="send number %input to Wappsto for Value %valueID"
+    //% blockId="wapp_number_value" block="send number %input to Wappsto for Value %valueID||%behaviour"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
-    export function sendNumberToWappsto(input: number, valueID: number): void {
+    //% behaviour.defl=WappstoTransmit.OnChange
+    export function sendNumberToWappsto(input: number, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
+       if(behaviour == WappstoTransmit.OnChange) {
+            if(input == old_value[valueID]) {
+                return
+            }
+            old_value[valueID] = input
+        }
+
         writeValueUpdate(1, valueID, input.toString())
     }
 
@@ -251,9 +271,17 @@ namespace Wappsto {
      * @param valueID The id of the value to send
      */
     //% weight=50
-    //% blockId="wapp_string_value" block="send string %input to Wappsto for Value %valueID"
+    //% blockId="wapp_string_value" block="send string %input to Wappsto for String %valueID||%behaviour"
     //% valueID.min=16 valueID.max=20 valueID.defl=16
-    export function sendStringToWappsto(input: string, valueID: number): void {
+    //% behaviour.defl=WappstoTransmit.OnChange
+    export function sendStringToWappsto(input: string, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
+        if(behaviour == WappstoTransmit.OnChange) {
+            if(input == old_value[valueID]) {
+                return
+            }
+            old_value[valueID] = input
+        }
+
         writeValueUpdate(1, valueID, input)
     }
 
