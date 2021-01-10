@@ -34,7 +34,7 @@ namespace Wappsto {
     let i2cDevice = 0x11
     let bufferSize = 200
     let handlers: any[] = []
-    let model: any[] = []
+    let model: { sent: boolean, model: string }[] = []
 
     function parseJSON(data: string): Array<any> {
         let res = ["", "","",""]
@@ -158,8 +158,8 @@ namespace Wappsto {
         writeToWappstobit('{"device":1,"name":"'+name+'"}')
 
         for(let i=0; i < model.length; i++) {
-            if(!model[i][0]) {
-                writeToWappstobit(model[i][1]);
+            if(!model[i].sent) {
+                writeToWappstobit(model[i].model);
             }
         }
 
@@ -215,7 +215,7 @@ namespace Wappsto {
         data += '"name":"'+name+'","type": "'+type+'",';
         data += '"min":'+min.toString()+',"max":'+max.toString()+',"step":'+step+',';
         data += '"unit":"'+unit+'"';
-        model.push([false, '{'+data+'}']);
+        model.push({"sent": false, "model": '{'+data+'}'});
     }
 
     /**
@@ -230,8 +230,7 @@ namespace Wappsto {
         let device = 1;
         let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
         data += '"name":"'+name+'","type": "'+type+'"';
-        model.push([false, '{'+data+'}']);
-
+        model.push({"sent": false, "model": '{'+data+'}'});
     }
 
     /**
