@@ -34,27 +34,34 @@ namespace Wappsto {
     let i2cDevice = 0x11
     let bufferSize = 200
     let handlers: any[] = []
+    let model: any[] = []
 
     function parseJSON(data: string): Array<any> {
-        let res = ["","",""]
+        let res = ["", "","",""]
         if(data.indexOf("{") == 0 && data.indexOf("}") != -1) {
             data = data.replace("{","").replace("}","").replaceAll("\"","")
             let aData = data.split(",");
-            for(let i=0; i < aData.length; i++) {
-                let arr = aData[i].split(":");
-                switch(arr[0]) {
-                    case "device":
-                        res[0] = arr[1]
-                        break
-                    case "value":
-                        res[1] = arr[1]
-                        break
-                    case "data":
-                        res[2] = arr[1];
-                        break
+            if(aData[0].split(":")[0] == "device") {
+                res[0]="wappsto"
+                for(let i=0; i < aData.length; i++) {
+                    let arr = aData[i].split(":");
+                    switch(arr[0]) {
+                        case "device":
+                            res[1] = arr[1]
+                            break
+                        case "value":
+                            res[2] = arr[1]
+                            break
+                        case "data":
+                            res[3] = arr[1];
+                            break
+                    }
                 }
+            } else {
+                serial.writeString(data + '\n')
             }
         }
+
         return res;
     }
 
@@ -81,26 +88,31 @@ namespace Wappsto {
             serial.writeString('BitTx ('+buffer.length+'): '+data+'\n')
             pins.i2cWriteBuffer(i2cDevice, buffer, false)
         }
-        basic.pause(100);
+        basic.pause(10);
     }
 
 
     function receiveHandler(data: string): void {
         let j = parseJSON(data);
-        let index: number = j[1]
-        if(j[0] == 1) {
-            if(handlers[index] != null) {
-                handlers[index](j[2]);
-            }
+        switch (j[0]) {
+            case "wappsto":
+                let index: number = j[2]
+                if(j[1] == 1) {
+                    if(handlers[index] != null) {
+                        handlers[index](j[3]);
+                    }
+                }
+                break
+            case "message":
+                break
         }
     }
-
 
     /**
      * Connects to Wappsto using Wappsto:bit
      * @param name The name of your Micro:bit
      */
-    //% weight=100
+    //% weight=80
     //% blockId="wapp_microbit_connect" block="connect %name to Wappsto by Seluxit"
     //% name.defl=MicroBit
     export function connect(name: string): void {
@@ -143,14 +155,21 @@ namespace Wappsto {
 
         basic.pause(100)
 
-        let device = 1;
-        writeToWappstobit('{"device":'+device.toString()+',"name":"'+name+'"}')
+        writeToWappstobit('{"device":1,"name":"'+name+'"}')
+
+        for(let i=0; i < model.length; i++) {
+            if(!model[i][0]) {
+                writeToWappstobit(model[i][1]);
+            }
+        }
+
+        writeCommand("save");
     }
 
     /**
      * Configure a Wappsto value.
      */
-    //% weight=80
+    //% weight=90
     //% blockId="wapp_configure_value"
     //% block="setup Wappsto value %valueID with name %name as %type"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
@@ -184,7 +203,7 @@ namespace Wappsto {
     /**
      * Configure Wappsto number value.
      */
-    //% weight=80
+    //% weight=90
     //% blockId="wapp_configure_number_value"
     //% block="setup Wappsto number value %valueID Name: %name Type: %type||Min: %min Max: %max Step: %step Unit: %unit"
     //% expandableArgumentMode="toggle"
@@ -196,13 +215,13 @@ namespace Wappsto {
         data += '"name":"'+name+'","type": "'+type+'",';
         data += '"min":'+min.toString()+',"max":'+max.toString()+',"step":'+step+',';
         data += '"unit":"'+unit+'"';
-        writeToWappstobit('{'+data+'}');
+        model.push([false, '{'+data+'}']);
     }
 
     /**
      * Configure Wappsto string value.
      */
-    //% weight=70
+    //% weight=90
     //% blockId="wapp_configure_string_value"
     //% block="setup Wappsto string value %valueID Name: %name Type: %type"
     //% advanced=true
@@ -211,24 +230,8 @@ namespace Wappsto {
         let device = 1;
         let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
         data += '"name":"'+name+'","type": "'+type+'"';
-        writeToWappstobit('{'+data+'}');
-    }
+        model.push([false, '{'+data+'}']);
 
-    /**
-     * Send a command to Wappsto.
-     * @param cmd The command to send to wappsto
-     */
-    //% weight=60
-    //% blockId="wapp_command" block="send command %cmd to Wappsto"
-    export function sendCommandToWappsto(cmd: WappstoCommand): void {
-        switch(cmd) {
-            case WappstoCommand.Clean:
-                writeCommand("clean");
-                break;
-            case WappstoCommand.Save:
-                writeCommand("save");
-                break;
-        }
     }
 
     /**
@@ -278,5 +281,24 @@ namespace Wappsto {
     export function onStringEvent(valueID: number, handler: (receviedString: string) => void) {
         handlers[valueID] = handler;
     }
+
+    /**
+     * Send a command to Wappsto.
+     * @param cmd The command to send to wappsto
+     */
+    //% weight=60
+    //% advanced=true
+    //% blockId="wapp_command" block="send command %cmd to Wappsto"
+    export function sendCommandToWappsto(cmd: WappstoCommand): void {
+        switch(cmd) {
+            case WappstoCommand.Clean:
+                writeCommand("clean");
+                break;
+            case WappstoCommand.Save:
+                writeCommand("save");
+                break;
+        }
+    }
+
 
 }
