@@ -145,8 +145,8 @@ namespace Wappsto {
                 while (true) {
                     let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
                     let i = 0;
-                    while (bufr[i] != 255) {
-                        if (bufr[i] == 0x00) {
+                    while (bufr[i] != 255 && i < 200) {
+                        if (i > 0 && bufr[i] == 0x00 && bufr[i-1] !=0x00) {
                             let data = bufr.slice(0,i).toString();
                             serial.writeString('BitRx ('+data.length+'): ' + data+ '\n')
                             receiveHandler(data+'\n')
@@ -167,6 +167,7 @@ namespace Wappsto {
         for(let i=0; i < model.length; i++) {
             if(!model[i].sent) {
                 writeToWappstobit(model[i].model);
+                model[i].sent = true;
             }
         }
 
