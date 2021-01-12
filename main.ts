@@ -19,6 +19,11 @@ enum WappstoValueTemplate {
     Magnetic,
     //% block="Number"
     Number,
+    //% block="Latitude"
+    Latitude,
+    //% block="Longitude"
+    Longitude,
+
 }
 
 enum WappstoTransmit {
@@ -95,7 +100,7 @@ namespace Wappsto {
             serial.writeString('BitTx ('+buffer.length+'): '+data+'\n')
             pins.i2cWriteBuffer(i2cDevice, buffer, false)
         }
-        basic.pause(10);
+        //basic.pause(5000);
     }
 
 
@@ -207,6 +212,14 @@ namespace Wappsto {
             case WappstoValueTemplate.Number:
                 configureNumberValue(valueID, name, "Number", 0, 255, 1, "number");
                 break;
+            case WappstoValueTemplate.Latitude:
+                configureNumberValue(valueID, name, "latitude", -90, 90, 0.000001, "°N");
+                break;
+            case WappstoValueTemplate.Longitude:
+                configureNumberValue(valueID, name, "longitude", -180, 180, 0.000001, "°E");
+                break;
+
+
         }
     }
 
@@ -294,7 +307,7 @@ namespace Wappsto {
     //% draggableParameters
     //% advanced=true
     //% valueID.min=1 valueID.max=15 valueID.defl=1
-    export function onNumberEvent(valueID: number, handler: (receviedNumber: number) => void) {
+    export function onNumberEvent(valueID: number, handler: (receivedNumber: number) => void) {
         handlers[valueID] = handler;
     }
 
@@ -306,7 +319,7 @@ namespace Wappsto {
     //% draggableParameters
     //% advanced=true
     //% valueID.min=16 valueID.max=20 valueID.defl=16
-    export function onStringEvent(valueID: number, handler: (receviedString: string) => void) {
+    export function onStringEvent(valueID: number, handler: (receivedString: string) => void) {
         handlers[valueID] = handler;
     }
 
@@ -326,6 +339,26 @@ namespace Wappsto {
                 writeCommand("save");
                 break;
         }
+    }
+
+    //% block="GPS longitude"
+    export function longitude(): number {
+        return 9.88369;
+    }
+
+    //% block="GPS latitude"
+    export function latitude(): number {
+        return 57.01971;
+    }
+
+    //% block="Signal quality"
+    export function signalQuality(): number {
+        return randint(98, 100);
+    }
+
+    //% block="Carrier"
+    export function carrier(): string {
+        return "TELENOR";
     }
 
 
