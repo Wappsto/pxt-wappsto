@@ -40,7 +40,7 @@ enum WappstoTransmit {
 //% color=#03a6ef weight=90 icon="\uf213" block="Wappsto"
 namespace Wappsto {
     let connected = false
-    let bitName = ""
+    let bitName = "Wappsto:bit"
     let link = "i2c"
     let i2cDevice = 0x11
     let bufferSize = 200
@@ -81,7 +81,7 @@ namespace Wappsto {
         writeToWappstobit('{"command":"'+cmd+'"}');
     }
 
-    function writeValueUpdate(device: number, value: number, data: string): void {
+    function writeValueUpdate(device: number, value: number, data: string = null): void {
         writeToWappstobit('{"device":'+device.toString()+',"value":'+value.toString()+',"data":"'+data+'"}');
     }
 
@@ -166,17 +166,17 @@ namespace Wappsto {
         }
 
         basic.pause(100)
-
+        //writeCommand("clean");
         writeToWappstobit('{"device":1,"name":"'+name+'"}')
 
-        for(let i=0; i < model.length; i++) {
-            if(!model[i].sent) {
-                writeToWappstobit(model[i].model);
-                model[i].sent = true;
-            }
-        }
-
-        writeCommand("save");
+//        for(let i=0; i < model.length; i++) {
+//            if(!model[i].sent) {
+//                writeToWappstobit(model[i].model);
+//                model[i].sent = true;
+//            }
+//        }
+//
+//        writeCommand("save");
     }
 
     /**
@@ -240,7 +240,8 @@ namespace Wappsto {
         data += '"name":"'+name+'","type": "'+type+'",';
         data += '"min":'+min.toString()+',"max":'+max.toString()+',"step":'+step+',';
         data += '"unit":"'+unit+'"';
-        model.push({"sent": false, "model": '{'+data+'}'});
+//        model.push({"sent": false, "model": '{'+data+'}'});
+        writeToWappstobit('{'+data+'}');
     }
 
     /**
@@ -256,7 +257,9 @@ namespace Wappsto {
         let device = 1;
         let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
         data += '"name":"'+name+'","type": "'+type+'"';
-        model.push({"sent": false, "model": '{'+data+'}'});
+//        model.push({"sent": false, "model": '{'+data+'}'});
+        writeToWappstobit('{'+data+'}');
+
     }
 
     /**
@@ -308,6 +311,7 @@ namespace Wappsto {
     //% advanced=true
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     export function onNumberEvent(valueID: number, handler: (receivedNumber: number) => void) {
+        writeValueUpdate(1, valueID, "");
         handlers[valueID] = handler;
     }
 
@@ -320,6 +324,7 @@ namespace Wappsto {
     //% advanced=true
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     export function onStringEvent(valueID: number, handler: (receivedString: string) => void) {
+        writeValueUpdate(1, valueID, "");
         handlers[valueID] = handler;
     }
 
