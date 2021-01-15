@@ -107,7 +107,6 @@ namespace Wappsto {
             serial.writeString('BitTx ('+buffer.length+'): '+data+'\n')
             pins.i2cWriteBuffer(i2cDevice, buffer, false)
         }
-        //basic.pause(5000);
     }
 
     function receiveHandler(data: string): void {
@@ -157,20 +156,26 @@ namespace Wappsto {
             });
         } else if(link=="i2c") {
             control.inBackground(() => {
+                let count: number = 0;
                 while (true) {
                     let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
                     let i = 0;
                     while (bufr[i] != 255 && i < 200) {
                         if (i > 0 && bufr[i] == 0x00 && bufr[i-1] !=0x00) {
                             let data = bufr.slice(0,i).toString();
-                            serial.writeString('BitRx ('+data.length+'): ' + data+ '\n')
-                            receiveHandler(data+'\n')
+                            serial.writeString('BitRx ('+data.length+'): ' + data+ '\n');
+                            receiveHandler(data+'\n');
                             break;
                         }
                         i++;
                     }
 
-                    basic.pause(100)
+                    basic.pause(100);
+                    count++;
+                    if(count > 20) {
+                        writeCommand("info");
+                        count = 0;
+                    }
                 }
             });
         }
