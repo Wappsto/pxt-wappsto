@@ -48,29 +48,14 @@ namespace Wappsto {
     let model: { sent: boolean, model: string }[] = []
     let old_value: any[] = []
 
-    function parseJSON(data: string): Array<any> {
-        let res = ["", "","",""]
+    function parseJSON(data: string): {[index: string]: string} {
+        let res: {[index: string]: string} = {};
         if(data.indexOf("{") == 0 && data.indexOf("}") != -1) {
             data = data.replace("{","").replace("}","").replaceAll("\"","")
             let aData = data.split(",");
-            if(aData[0].split(":")[0] == "device") {
-                res[0]="wappsto"
-                for(let i=0; i < aData.length; i++) {
-                    let arr = aData[i].split(":");
-                    switch(arr[0]) {
-                        case "device":
-                            res[1] = arr[1]
-                            break
-                        case "value":
-                            res[2] = arr[1]
-                            break
-                        case "data":
-                            res[3] = arr[1];
-                            break
-                    }
-                }
-            } else {
-                serial.writeString(data + '\n')
+            for(let i=0; i < aData.length; i++) {
+                let arr: Array<string> = aData[i].split(":");
+                res[arr[0]] = arr[1];
             }
         }
 
@@ -81,7 +66,14 @@ namespace Wappsto {
         writeToWappstobit('{"command":"'+cmd+'"}');
     }
 
-    function writeValueUpdate(device: number, value: number, data: string = null): void {
+    function writeValueUpdate(device: number, value: number, data: string = null, behaviour: WappstoTransmit = WappstoTransmit.ASAP): void {
+        if(behaviour == WappstoTransmit.OnChange) {
+            if(data == old_value[value]) {
+                return
+            }
+            old_value[value] = data
+        }
+
         writeToWappstobit('{"device":'+device.toString()+',"value":'+value.toString()+',"data":"'+data+'"}');
     }
 
@@ -105,18 +97,17 @@ namespace Wappsto {
 
 
     function receiveHandler(data: string): void {
-        let j = parseJSON(data);
-        switch (j[0]) {
-            case "wappsto":
-                let index: number = j[2]
-                if(j[1] == 1) {
-                    if(handlers[index] != null) {
-                        handlers[index](j[3]);
-                    }
-                }
-                break
-            case "message":
-                break
+        let json = parseJSON(data);
+        let val = json["data"];
+        if(data != null) {
+            if(json["device"] != "1") {
+                return;
+            }
+            let sIndex: string = json["value"];
+            let index: number = parseInt(sIndex);
+            if(handlers[index] != null) {
+                handlers[index](val);
+            }
         }
     }
 
@@ -272,14 +263,7 @@ namespace Wappsto {
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% behaviour.defl=WappstoTransmit.OnChange
     export function sendNumberToWappsto(input: number, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
-       if(behaviour == WappstoTransmit.OnChange) {
-            if(input == old_value[valueID]) {
-                return
-            }
-            old_value[valueID] = input
-        }
-
-        writeValueUpdate(1, valueID, input.toString())
+        writeValueUpdate(1, valueID, input.toString(), behaviour);
     }
 
     /**
@@ -292,14 +276,7 @@ namespace Wappsto {
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% behaviour.defl=WappstoTransmit.OnChange
     export function sendStringToWappsto(input: string, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
-        if(behaviour == WappstoTransmit.OnChange) {
-            if(input == old_value[valueID]) {
-                return
-            }
-            old_value[valueID] = input
-        }
-
-        writeValueUpdate(1, valueID, input)
+        writeValueUpdate(1, valueID, input, behaviour)
     }
 
     /**
