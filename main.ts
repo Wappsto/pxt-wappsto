@@ -1,10 +1,3 @@
-enum WappstoCommand {
-    //% block="Save"
-    Save = 1,
-    //% block="Clean"
-    Clean = 2,
-}
-
 enum WappstoValueTemplate {
     //% block="Temperature"
     Temperature,
@@ -47,6 +40,11 @@ namespace Wappsto {
     let handlers: any[] = []
     let model: { sent: boolean, model: string }[] = []
     let old_value: any[] = []
+    let gps_longitude: number = 0;
+    let gps_latitude: number = 0;
+    let signal: number = 0;
+    let connection_status: number = 0;
+    let connection_info: string = "";
 
     function parseJSON(data: string): {[index: string]: string} {
         let res: {[index: string]: string} = {};
@@ -60,6 +58,22 @@ namespace Wappsto {
         }
 
         return res;
+    }
+
+    function generateJSON(data: {[index: string]: string}): string {
+        let json: string = "";
+/*
+        while(!data.empty()) {
+
+        }
+        for(let key of data) {
+            if(json != "") {
+                json += ",";
+            }
+            json += '"'+key+'":"'+data["key"]+'"';
+        }
+*/
+        return '{'+json+'}';
     }
 
     function writeCommand(cmd: string): void {
@@ -81,6 +95,7 @@ namespace Wappsto {
         if(!connected) {
             connect(bitName);
         }
+
         if(link=="serial") {
             serial.writeString(data+'\n');
         } else if(link=="i2c") {
@@ -95,7 +110,6 @@ namespace Wappsto {
         //basic.pause(5000);
     }
 
-
     function receiveHandler(data: string): void {
         let json = parseJSON(data);
         let val = json["data"];
@@ -103,11 +117,16 @@ namespace Wappsto {
             if(json["device"] != "1") {
                 return;
             }
-            let sIndex: string = json["value"];
-            let index: number = parseInt(sIndex);
+            let index: number = parseInt(json["value"]);
             if(handlers[index] != null) {
                 handlers[index](val);
             }
+        } else {
+            gps_longitude = parseInt(json["lon"]);
+            gps_latitude = parseInt(json["lat"]);
+            signal = parseInt(json["signal"]);
+            connection_status = parseInt(json["status"]);
+            connection_info = json["info"];
         }
     }
 
@@ -179,7 +198,6 @@ namespace Wappsto {
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyValue"
     //% type.defl=WappstoValueTemplate.Number
-
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
         switch(type) {
             case WappstoValueTemplate.Temperature:
@@ -226,7 +244,7 @@ namespace Wappsto {
     //% name.defl="MyNumber" type.defl="Number" min.defl=0 max.defl=255 step.defl=1
     export function configureNumberValue(valueID: number, name: string, type: string, min: number = 0, max: number = 255, step: number = 1, unit: string = null): void {
         let device = 1;
-        if(unit==null) unit = "";
+        if(unit == null) unit = "";
         let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
         data += '"name":"'+name+'","type": "'+type+'",';
         data += '"min":'+min.toString()+',"max":'+max.toString()+',"step":'+step+',';
@@ -306,42 +324,32 @@ namespace Wappsto {
     }
 
     /**
-     * Send a command to Wappsto.
-     * @param cmd The command to send to wappsto
+     * Send a clean command to Wappsto.
      */
     //% weight=60
     //% advanced=true
-    //% blockId="wapp_command" block="send command %cmd to Wappsto"
-    export function sendCommandToWappsto(cmd: WappstoCommand): void {
-        switch(cmd) {
-            case WappstoCommand.Clean:
-                writeCommand("clean");
-                break;
-            case WappstoCommand.Save:
-                writeCommand("save");
-                break;
-        }
+    //% blockId="wapp_clean" block="send clean command to Wappsto"
+    export function sendCleanToWappsto(): void {
+        writeCommand("clean");
     }
 
     //% block="GPS longitude"
     export function longitude(): number {
-        return 9.88369;
+        return gps_longitude;
     }
 
     //% block="GPS latitude"
     export function latitude(): number {
-        return 57.01971;
+        return gps_latitude;
     }
 
     //% block="Signal quality"
     export function signalQuality(): number {
-        return randint(98, 100);
+        return signal;
     }
 
     //% block="Carrier"
     export function carrier(): string {
-        return "TELENOR";
+        return connection_info;
     }
-
-
 }
