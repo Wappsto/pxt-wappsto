@@ -112,7 +112,7 @@ namespace Wappsto {
     function receiveHandler(data: string): void {
         let json = parseJSON(data);
         let val = json["data"];
-        if(data != null) {
+        if(val != null) {
             if(json["device"] != "1") {
                 return;
             }
@@ -121,8 +121,8 @@ namespace Wappsto {
                 handlers[index](val);
             }
         } else {
-            gps_longitude = parseInt(json["lon"]);
-            gps_latitude = parseInt(json["lat"]);
+            gps_longitude = parseFloat(json["lon"]);
+            gps_latitude = parseFloat(json["lat"]);
             signal = parseInt(json["signal"]);
             connection_status = parseInt(json["status"]);
             connection_info = json["info"];
@@ -206,7 +206,7 @@ namespace Wappsto {
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
         switch(type) {
             case WappstoValueTemplate.Temperature:
-                configureNumberValue(valueID, name, "Temperature", -5, 50, 1, "C°");
+                configureNumberValue(valueID, name, "Temperature", -5, 50, 1, "°C");
                 break;
             case WappstoValueTemplate.Light:
                 configureNumberValue(valueID, name, "Light", 0, 255, 1, "lx");
