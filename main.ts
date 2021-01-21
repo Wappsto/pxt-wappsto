@@ -7,8 +7,9 @@ enum WappstoValueTemplate {
     Compass,
     //% block="Acceleration"
     Acceleration,
-
+    //% block="Rotation"
     Rotation,
+    //% block="Magnetic"
     Magnetic,
     //% block="Number"
     Number,
@@ -16,7 +17,6 @@ enum WappstoValueTemplate {
     Latitude,
     //% block="Longitude"
     Longitude,
-
 }
 
 enum WappstoTransmit {
@@ -25,7 +25,6 @@ enum WappstoTransmit {
     //% block="ASAP"
     ASAP,
 }
-
 
 /**
  * MakeCode extension for the Seluxit Wappsto:bit extension module
@@ -65,22 +64,19 @@ namespace Wappsto {
 
     function generateJSON(data: {[index: string]: string}): string {
         let json: string = "";
-/*
-        while(!data.empty()) {
-
-        }
-        for(let key of data) {
+        let keys = Object.keys(data);
+        for(let i = 0; i < keys.length; i++) {
             if(json != "") {
                 json += ",";
             }
-            json += '"'+key+'":"'+data["key"]+'"';
+            json += '"'+keys[i]+'":"'+data[keys[i]]+'"';
         }
-*/
         return '{'+json+'}';
     }
 
     function writeCommand(cmd: string): void {
-        writeToWappstobit('{"command":"'+cmd+'"}');
+        let json = {"command": cmd};
+        writeToWappstobit(json);
     }
 
     function writeValueUpdate(device: number, value: number, data: string = null, behaviour: WappstoTransmit = WappstoTransmit.ASAP): void {
@@ -91,13 +87,19 @@ namespace Wappsto {
             old_value[value] = data
         }
 
-        writeToWappstobit('{"device":'+device.toString()+',"value":'+value.toString()+',"data":"'+data+'"}');
+        let json: {[index: string]: string} = {};
+        json["device"] = device.toString();
+        json["value"] = value.toString();
+        json["data"] = data;
+        writeToWappstobit(json);
     }
 
-    function writeToWappstobit(data: string): void {
+    function writeToWappstobit(json: {[index: string]: string}): void {
         if(!connected) {
             connect(bitName);
         }
+
+        let data: string = generateJSON(json);
 
         if(link=="serial") {
             serial.writeString(data+'\n');
@@ -184,9 +186,14 @@ namespace Wappsto {
         }
 
         basic.pause(100)
+
+        let json: {[index: string]: string} = {};
+        json["device"] = "1";
+        json["name"] = name;
+        writeToWappstobit(json);
+
         //writeCommand("clean");
 
-        writeToWappstobit('{"device":1,"name":"'+name+'"}')
         control.inBackground(() => {
             while (true) {
                 writeCommand("info");
@@ -242,8 +249,6 @@ namespace Wappsto {
             case WappstoValueTemplate.Longitude:
                 configureNumberValue(valueID, name, "longitude", -180, 180, 0.000001, "°E");
                 break;
-
-
         }
     }
 
@@ -258,14 +263,17 @@ namespace Wappsto {
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyNumber" type.defl="Number" min.defl=0 max.defl=255 step.defl=1
     export function configureNumberValue(valueID: number, name: string, type: string, min: number = 0, max: number = 255, step: number = 1, unit: string = null): void {
-        let device = 1;
         if(unit == null) unit = "";
-        let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
-        data += '"name":"'+name+'","type": "'+type+'",';
-        data += '"min":'+min.toString()+',"max":'+max.toString()+',"step":'+step+',';
-        data += '"unit":"'+unit+'"';
-//        model.push({"sent": false, "model": '{'+data+'}'});
-        writeToWappstobit('{'+data+'}');
+        let json: {[index: string]: string} = {};
+        json["device"] = "1";
+        json["value"] = valueID.toString();
+        json["name"] = name;
+        json["type"] = type;
+        json["min"] = min.toString();
+        json["max"] = max.toString();
+        json["step"] = step.toString();
+        json["unit"] = unit;
+        writeToWappstobit(json);
     }
 
     /**
@@ -278,11 +286,12 @@ namespace Wappsto {
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% name.defl="MyString" type.defl="String"
     export function configureStringValue(valueID: number, name: string, type: string): void {
-        let device = 1;
-        let data = '"device":'+device.toString()+',"value":'+valueID.toString()+',';
-        data += '"name":"'+name+'","type": "'+type+'"';
-//        model.push({"sent": false, "model": '{'+data+'}'});
-        writeToWappstobit('{'+data+'}');
+        let json: {[index: string]: string} = {};
+        json["device"] = "1";
+        json["value"] = valueID.toString();
+        json["name"] = name;
+        json["type"] = type;
+        writeToWappstobit(json);
 
     }
 
@@ -309,7 +318,7 @@ namespace Wappsto {
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% behaviour.defl=WappstoTransmit.OnChange
     export function sendStringToWappsto(input: string, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
-        writeValueUpdate(1, valueID, input, behaviour)
+        writeValueUpdate(1, valueID, input, behaviour);
     }
 
     /**
