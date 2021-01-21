@@ -43,10 +43,11 @@ namespace Wappsto {
     let gps_longitude: number = 0;
     let gps_latitude: number = 0;
     let signal: number = 0;
-    let connection_status: number = 0;
+    let connection_status: string = "";
     let connection_info: string = "";
     let _time_utc: number = 0;
     let _uptime: number = 0;
+    let wappsto_connected: boolean = false;
 
     function parseJSON(data: string): {[index: string]: string} {
         let res: {[index: string]: string} = {};
@@ -126,10 +127,15 @@ namespace Wappsto {
             gps_longitude = parseFloat(json["lon"]);
             gps_latitude = parseFloat(json["lat"]);
             signal = parseInt(json["signal"]);
-            connection_status = parseInt(json["status"]);
-            connection_info = json["info"];
+            connection_status = json["status"];
+            connection_info = json["network"];
             _time_utc = parseInt(json["utc_time"]);
             _uptime = parseInt(json["uptime"]);
+            if(connection_status == "conencted") {
+                wappsto_connected = true;
+            } else {
+                wappsto_connected = false;
+            }
         }
     }
 
@@ -228,7 +234,7 @@ namespace Wappsto {
                 configureNumberValue(valueID, name, "Magnetic Force", -40, 40, 0.001, "µT");
                 break;
             case WappstoValueTemplate.Number:
-                configureNumberValue(valueID, name, "Number", 0, 255, 1, "number");
+                configureNumberValue(valueID, name, "Number", 0, 255, 1, "");
                 break;
             case WappstoValueTemplate.Latitude:
                 configureNumberValue(valueID, name, "latitude", -90, 90, 0.000001, "°N");
@@ -324,6 +330,7 @@ namespace Wappsto {
      */
     //% blockID="wappsto_string_event"
     //% block="on string value %valueID received from Wappsto"
+    //% block.loc.da="når streng værdien %valueID modtages fra Wappsto"
     //% draggableParameters
     //% advanced=true
     //% valueID.min=16 valueID.max=20 valueID.defl=16
@@ -337,38 +344,52 @@ namespace Wappsto {
      */
     //% weight=60
     //% advanced=true
-    //% blockId="wapp_clean" block="send clean command to Wappsto"
+    //% blockId="wapp_clean" block="send request to clear Wappsto"
+    //% block.loc.da="fjern gamle værdier i Wappsto"
     export function sendCleanToWappsto(): void {
         writeCommand("clean");
     }
 
     //% block="GPS longitude"
+    //% block.loc.da="GPS-længdegrad"
     export function longitude(): number {
         return gps_longitude;
     }
 
     //% block="GPS latitude"
+    //% block.loc.da="GPS-breddegrad"
     export function latitude(): number {
         return gps_latitude;
     }
 
     //% block="Signal quality"
+    //% block.loc.da="Signalstyrke"
     export function signalQuality(): number {
         return signal;
     }
 
-    //% block="Carrier"
+    //% block="Network Name"
+    //% block.loc.da="Netværksnavn"
     export function carrier(): string {
         return connection_info;
     }
 
     //% block="Time UTC (epoch seconds)"
+    //% block.loc.da="Tid UTC (epoch sekunder)"
     export function time_utc(): number {
         return _time_utc;
     }
 
     //% block="Wappsto:bit Uptime"
+    //% block.loc.da="Wappsto:bit oppetid"
+
     export function uptime(): number {
         return _uptime;
+    }
+
+    //% block="Wappsto:bit is online"
+    //% block.loc.da="Wappsto:bit er online"
+    export function wappstoConnected(): boolean {
+        return wappsto_connected;
     }
 }
