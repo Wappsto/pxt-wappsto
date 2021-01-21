@@ -41,6 +41,8 @@ enum WappstoTransmit {
  * MakeCode extension for the Seluxit Wappsto:bit extension module
  */
 //% color=#03a6ef weight=90 icon="\uf213" block="Wappsto"
+//% groups=['Data model', 'Wappsto basic flow', "Wappsto:bit information", "Wappsto:bit configuration" 'others']
+
 namespace Wappsto {
     let connected = false
     let bitName = "Wappsto:bit"
@@ -167,6 +169,7 @@ namespace Wappsto {
     //% blockId="wapp_microbit_connect" block="connect %name to Wappsto by Seluxit"
     //% block.loc.da="forbind %name til Wappsto"
     //% name.defl=MicroBit
+    //% group="Wappsto basic flow"
     export function connect(name: string): void {
         if(connected) {
             return;
@@ -231,6 +234,8 @@ namespace Wappsto {
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyValue"
     //% type.defl=WappstoValueTemplate.Number
+    //% group="Data model"
+
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
         switch(type) {
             case WappstoValueTemplate.Temperature:
@@ -271,9 +276,10 @@ namespace Wappsto {
     //% block="setup Wappsto number value %valueID Name: %name Type: %type||Min: %min Max: %max Step: %step Unit: %unit"
     //% block.loc.da="opsæt Wappsto nummer værdi %valueID Navn: %name Type: %type||Min: %min Maks: %max Trin: %step Enhed: %unit"
     //% expandableArgumentMode="toggle"
-    //% advanced=true
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyNumber" type.defl="Number" min.defl=0 max.defl=255 step.defl=1
+    //% advanced=true
+    //% group="Data model"
     export function configureNumberValue(valueID: number, name: string, type: string, min: number = 0, max: number = 255, step: number = 1, unit: string = null): void {
         if(unit == null) unit = "";
         let json: {[index: string]: string} = {};
@@ -297,9 +303,9 @@ namespace Wappsto {
     //% blockId="wapp_configure_string_value"
     //% block="setup Wappsto string %valueID with name %name as type %type"
     //% block.loc.da="opsæt Wappsto streng %valueID med navn %name som type %type"
-    //% advanced=true
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% name.defl="MyString" type.defl="String"
+    //% group="Data model"
     export function configureStringValue(valueID: number, name: string, type: string): void {
         let json: {[index: string]: string} = {};
         json["device"] = "1";
@@ -316,11 +322,12 @@ namespace Wappsto {
      * @param input The new value to send
      * @param valueID The id of the value to send
      */
-    //% weight=50
+    //% weight=65
     //% blockId="wapp_number_value" block="send number %input to Wappsto for Value %valueID||%behaviour"
     //% block.loc.da="send nummer %input til Wappsto for Nummer %valueID||%behaviour"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% behaviour.defl=WappstoTransmit.OnChange
+    //% group="Wappsto basic flow"
     export function sendNumberToWappsto(input: number, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
         writeValueUpdate(1, valueID, input.toString(), behaviour);
     }
@@ -330,11 +337,12 @@ namespace Wappsto {
      * @param input The new value to send
      * @param valueID The id of the value to send
      */
-    //% weight=50
+    //% weight=60
     //% blockId="wapp_string_value" block="send string %input to Wappsto for String %valueID||%behaviour"
-    //%block.loc.da="send strengen %input til Wappsto for Streng %valueID||%behaviour"
+    //% block.loc.da="send strengen %input til Wappsto for Streng %valueID||%behaviour"
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% behaviour.defl=WappstoTransmit.OnChange
+    //% group="Wappsto basic flow"
     export function sendStringToWappsto(input: string, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
         writeValueUpdate(1, valueID, input, behaviour);
     }
@@ -344,10 +352,11 @@ namespace Wappsto {
      */
     //% blockID="wappsto_number_event"
     //% block="on number value %valueID received from Wappsto"
+    //% weight=45
     //% block.loc.da="når nummer værdien %valueID modtages fra Wappsto"
     //% draggableParameters
-    //% advanced=true
     //% valueID.min=1 valueID.max=15 valueID.defl=1
+    //% group="Wappsto basic flow"
     export function onNumberEvent(valueID: number, handler: (receivedNumber: number) => void) {
         let json: {[index: string]: string} = {};
         json["device"] = "1";
@@ -362,11 +371,12 @@ namespace Wappsto {
      * Event handler for Wappsto string events.
      */
     //% blockID="wappsto_string_event"
+    //% weight=40
     //% block="on string value %valueID received from Wappsto"
     //% block.loc.da="når streng værdien %valueID modtages fra Wappsto"
     //% draggableParameters
-    //% advanced=true
     //% valueID.min=16 valueID.max=20 valueID.defl=16
+    //% group="Wappsto basic flow"
     export function onStringEvent(valueID: number, handler: (receivedString: string) => void) {
         let json: {[index: string]: string} = {};
         json["device"] = "1";
@@ -380,21 +390,24 @@ namespace Wappsto {
     /**
      * Send a clean command to Wappsto.
      */
-    //% weight=60
+    //% weight=40
     //% advanced=true
     //% blockId="wapp_clean" block="send request to clear Wappsto"
     //% block.loc.da="fjern gamle værdier i Wappsto"
+    //% group="Data model"
     export function sendCleanToWappsto(): void {
         writeCommand("clean");
     }
 
     //% block="GPS longitude"
+    //% group="Wappsto:bit information"
     //% block.loc.da="GPS-længdegrad"
     export function longitude(): number {
         return gps_longitude;
     }
 
     //% block="GPS latitude"
+    //% group="Wappsto:bit information"
     //% block.loc.da="GPS-breddegrad"
     export function latitude(): number {
         return gps_latitude;
@@ -402,30 +415,38 @@ namespace Wappsto {
 
     //% block="Signal quality"
     //% block.loc.da="Signalstyrke"
+    //% group="Wappsto:bit information"
+    //% advanced=true
     export function signalQuality(): number {
         return signal;
     }
 
     //% block="Network Name"
     //% block.loc.da="Netværksnavn"
+    //% group="Wappsto:bit information"
+    //% advanced=true
     export function carrier(): string {
         return connection_info;
     }
 
     //% block="UTC Time (UNIX timestamp)"
     //% block.loc.da="UTC-tid (UNIX tidsstempel)"
+    //% group="Wappsto:bit information"
+    //% advanced=true
     export function time_utc(): number {
         return _time_utc;
     }
 
     //% block="Wappsto:bit Uptime"
     //% block.loc.da="Wappsto:bit oppetid"
-
+    //% group="Wappsto:bit information"
+    //% advanced=true
     export function uptime(): number {
         return _uptime;
     }
 
     //% block="Wappsto:bit is online"
+    //% group="Wappsto:bit information"
     //% block.loc.da="Wappsto:bit er online"
     export function wappstoConnected(): boolean {
         return wappsto_connected;
@@ -435,6 +456,8 @@ namespace Wappsto {
     //% block="configure Wifi network: %ssid %pass"
     //% block.loc.da="konfigurer Wifi netværk: %ssid %pass"
     //% ssid.defl="SSID" pass.defl="key"
+    //% group="Wappsto:bit configuration"
+    //% advanced=true
     export function configure_wif(ssid: string, pass: string): void {
         let json: {[index: string]: string} = {};
         json["command"] = "config_wifi";
@@ -448,6 +471,8 @@ namespace Wappsto {
     //% block="configure cellular APN: %apn"
     //% block.loc.da="konfigurer mobilnetværk APN: %apn"
     //% apn.defl="telenor.iot"
+    //% group="Wappsto:bit configuration"
+    //% advanced=true
     export function configure_apn(apn: string): void {
         let json: {[index: string]: string} = {};
         json["command"] = "config_apn";
