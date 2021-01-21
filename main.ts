@@ -48,15 +48,15 @@ namespace Wappsto {
     let i2cDevice = 0x11
     let bufferSize = 200
     let handlers: any[] = []
-    let model: { sent: boolean, model: string }[] = []
+    let model: {[index: string]: string}[] = []
     let old_value: any[] = []
-    let gps_longitude: number = 0;
-    let gps_latitude: number = 0;
+    let gps_longitude: number = NaN;
+    let gps_latitude: number = NaN;
     let signal: number = 0;
     let connection_status: string = "";
     let connection_info: string = "";
-    let _time_utc: number = 0;
-    let _uptime: number = 0;
+    let _time_utc: number = NaN;
+    let _uptime: number = NaN;
     let wappsto_connected: boolean = false;
 
     function parseJSON(data: string): {[index: string]: string} {
@@ -140,12 +140,19 @@ namespace Wappsto {
             gps_longitude = parseFloat(json["lon"]);
             gps_latitude = parseFloat(json["lat"]);
             signal = parseInt(json["signal"]);
-            connection_status = json["status"];
-            connection_info = json["network"];
+            let connection_status: string = json["status"] || "";
+            let connection_info: string = json["network"] || "";
             _time_utc = parseInt(json["utc_time"]);
             _uptime = parseInt(json["uptime"]);
-            if(connection_status == "conencted") {
-                wappsto_connected = true;
+            if(connection_status.substr(0,9) == "Connected") {
+                if (!wappsto_connected) {
+                    wappsto_connected = true;
+                    for(let i=0; i < model.length; i++) {
+                        if(model[i]) {
+                            writeToWappstobit(model[i]);
+                        }
+                    }
+                }
             } else {
                 wappsto_connected = false;
             }
@@ -212,15 +219,6 @@ namespace Wappsto {
                 basic.pause(5000);
             }
         });
-
-//        for(let i=0; i < model.length; i++) {
-//            if(!model[i].sent) {
-//                writeToWappstobit(model[i].model);
-//                model[i].sent = true;
-//            }
-//        }
-//
-//        writeCommand("save");
     }
 
     /**
@@ -287,6 +285,8 @@ namespace Wappsto {
         json["max"] = max.toString();
         json["step"] = step.toString();
         json["unit"] = unit;
+
+        model[valueID] = json;
         writeToWappstobit(json);
     }
 
@@ -306,8 +306,9 @@ namespace Wappsto {
         json["value"] = valueID.toString();
         json["name"] = name;
         json["type"] = type;
-        writeToWappstobit(json);
 
+        model[valueID] = json;
+        writeToWappstobit(json);
     }
 
     /**
