@@ -1,28 +1,39 @@
 enum WappstoValueTemplate {
     //% block="Temperature"
+    //% block.loc.da="Temperatur"
     Temperature,
-    //% block="Light"
+    //% block="Light level"
+    //% block.loc.da="Lys niveau"
     Light,
     //% block="Compass"
+    //% block.loc.da="Kompas"
     Compass,
     //% block="Acceleration"
+    //% block.loc.da="Acceleration"
     Acceleration,
     //% block="Rotation"
+    //% block.loc.da="Rotation"
     Rotation,
-    //% block="Magnetic"
+    //% block="Magnetometer"
+    //% block.loc.da="Magnetometer"
     Magnetic,
     //% block="Number"
+    //% block.loc.da="Nummer"
     Number,
     //% block="Latitude"
+    //% block.loc.da="Breddegrad"
     Latitude,
     //% block="Longitude"
+    //% block.loc.da="Længdegrad"
     Longitude,
 }
 
 enum WappstoTransmit {
-    //% block="OnChange"
+    //% block="If changed"
+    //% block.loc.da="Hvis ændret"
     OnChange,
-    //% block="ASAP"
+    //% block="When possible"
+    //% block.loc.da="Når muligt"
     ASAP,
 }
 
@@ -147,6 +158,7 @@ namespace Wappsto {
      */
     //% weight=80
     //% blockId="wapp_microbit_connect" block="connect %name to Wappsto by Seluxit"
+    //% block.loc.da="forbind %name til Wappsto"
     //% name.defl=MicroBit
     export function connect(name: string): void {
         if(connected) {
@@ -217,6 +229,7 @@ namespace Wappsto {
     //% weight=90
     //% blockId="wapp_configure_value"
     //% block="setup Wappsto value %valueID with name %name as %type"
+    //% block.loc.da="opsæt Wappsto værdi %valueID med navn %name som %type"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyValue"
     //% type.defl=WappstoValueTemplate.Number
@@ -258,6 +271,7 @@ namespace Wappsto {
     //% weight=90
     //% blockId="wapp_configure_number_value"
     //% block="setup Wappsto number value %valueID Name: %name Type: %type||Min: %min Max: %max Step: %step Unit: %unit"
+    //% block.loc.da="opsæt Wappsto nummer værdi %valueID Navn: %name Type: %type||Min: %min Maks: %max Trin: %step Enhed: %unit"
     //% expandableArgumentMode="toggle"
     //% advanced=true
     //% valueID.min=1 valueID.max=15 valueID.defl=1
@@ -282,6 +296,7 @@ namespace Wappsto {
     //% weight=90
     //% blockId="wapp_configure_string_value"
     //% block="setup Wappsto string %valueID with name %name as type %type"
+    //% block.loc.da="opsæt Wappsto streng %valueID med navn %name som type %type"
     //% advanced=true
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% name.defl="MyString" type.defl="String"
@@ -302,6 +317,7 @@ namespace Wappsto {
      */
     //% weight=50
     //% blockId="wapp_number_value" block="send number %input to Wappsto for Value %valueID||%behaviour"
+    //% block.loc.da="send nummer %input til Wappsto for Nummer %valueID||%behaviour"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% behaviour.defl=WappstoTransmit.OnChange
     export function sendNumberToWappsto(input: number, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
@@ -315,6 +331,7 @@ namespace Wappsto {
      */
     //% weight=50
     //% blockId="wapp_string_value" block="send string %input to Wappsto for String %valueID||%behaviour"
+    //%block.loc.da="send strengen %input til Wappsto for Streng %valueID||%behaviour"
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% behaviour.defl=WappstoTransmit.OnChange
     export function sendStringToWappsto(input: string, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
@@ -326,6 +343,7 @@ namespace Wappsto {
      */
     //% blockID="wappsto_number_event"
     //% block="on number value %valueID received from Wappsto"
+    //% block.loc.da="når nummer værdien %valueID modtages fra Wappsto"
     //% draggableParameters
     //% advanced=true
     //% valueID.min=1 valueID.max=15 valueID.defl=1
@@ -383,8 +401,8 @@ namespace Wappsto {
         return connection_info;
     }
 
-    //% block="Time UTC (epoch seconds)"
-    //% block.loc.da="Tid UTC (epoch sekunder)"
+    //% block="UTC Time (UNIX timestamp)"
+    //% block.loc.da="UTC-tid (UNIX tidsstempel)"
     export function time_utc(): number {
         return _time_utc;
     }
