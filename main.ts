@@ -229,8 +229,8 @@ namespace Wappsto {
      */
     //% weight=90
     //% blockId="wapp_configure_value"
-    //% block="setup Wappsto value %valueID with name %name as %type"
-    //% block.loc.da="opsæt Wappsto værdi %valueID med navn %name som %type"
+    //% block="setup Wappsto Number Value %valueID with name %name as %type"
+    //% block.loc.da="opsæt Wappsto Nummer Værdi %valueID med navn %name som %type"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyValue"
     //% type.defl=WappstoValueTemplate.Number
@@ -273,8 +273,8 @@ namespace Wappsto {
      */
     //% weight=90
     //% blockId="wapp_configure_number_value"
-    //% block="setup Wappsto number value %valueID Name: %name Type: %type||Min: %min Max: %max Step: %step Unit: %unit"
-    //% block.loc.da="opsæt Wappsto nummer værdi %valueID Navn: %name Type: %type||Min: %min Maks: %max Trin: %step Enhed: %unit"
+    //% block="setup Wappsto Number Value %valueID Name: %name Type: %type||Min: %min Max: %max Step: %step Unit: %unit"
+    //% block.loc.da="opsæt Wappsto Nummer Værdi %valueID Navn: %name Type: %type||Min: %min Maks: %max Trin: %step Enhed: %unit"
     //% expandableArgumentMode="toggle"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyNumber" type.defl="Number" min.defl=0 max.defl=255 step.defl=1
@@ -301,8 +301,8 @@ namespace Wappsto {
      */
     //% weight=90
     //% blockId="wapp_configure_string_value"
-    //% block="setup Wappsto string %valueID with name %name as type %type"
-    //% block.loc.da="opsæt Wappsto streng %valueID med navn %name som type %type"
+    //% block="setup Wappsto String Value %valueID with name %name as type %type"
+    //% block.loc.da="opsæt Wappsto Streng Værdi %valueID med navn %name som type %type"
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% name.defl="MyString" type.defl="String"
     //% group="Data model"
@@ -323,8 +323,8 @@ namespace Wappsto {
      * @param valueID The id of the value to send
      */
     //% weight=65
-    //% blockId="wapp_number_value" block="send number %input to Wappsto for Value %valueID||%behaviour"
-    //% block.loc.da="send nummer %input til Wappsto for Nummer %valueID||%behaviour"
+    //% blockId="wapp_number_value" block="send number %input to Wappsto Number Value %valueID||%behaviour"
+    //% block.loc.da="send nummer %input til Wappsto for Nummer Værdi %valueID||%behaviour"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
@@ -338,8 +338,8 @@ namespace Wappsto {
      * @param valueID The id of the value to send
      */
     //% weight=60
-    //% blockId="wapp_string_value" block="send string %input to Wappsto for String %valueID||%behaviour"
-    //% block.loc.da="send strengen %input til Wappsto for Streng %valueID||%behaviour"
+    //% blockId="wapp_string_value" block="send string %input to Wappsto String Value %valueID||%behaviour"
+    //% block.loc.da="send strengen %input til Wappsto Streng Værdi %valueID||%behaviour"
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
@@ -351,9 +351,9 @@ namespace Wappsto {
      * Event handler for Wappsto number events.
      */
     //% blockID="wappsto_number_event"
-    //% block="on number value %valueID received from Wappsto"
+    //% block="on Number Value %valueID received from Wappsto"
     //% weight=45
-    //% block.loc.da="når nummer værdien %valueID modtages fra Wappsto"
+    //% block.loc.da="når Nummer Værdien %valueID modtages fra Wappsto"
     //% draggableParameters
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% group="Wappsto basic flow"
@@ -372,8 +372,8 @@ namespace Wappsto {
      */
     //% blockID="wappsto_string_event"
     //% weight=40
-    //% block="on string value %valueID received from Wappsto"
-    //% block.loc.da="når streng værdien %valueID modtages fra Wappsto"
+    //% block="on String Value %valueID received from Wappsto"
+    //% block.loc.da="når Streng Værdien %valueID modtages fra Wappsto"
     //% draggableParameters
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% group="Wappsto basic flow"
