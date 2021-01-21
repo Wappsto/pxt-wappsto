@@ -44,6 +44,8 @@ namespace Wappsto {
     let signal: number = 0;
     let connection_status: number = 0;
     let connection_info: string = "";
+    let _time_utc: number = 0;
+    let _uptime: number = 0;
 
     function parseJSON(data: string): {[index: string]: string} {
         let res: {[index: string]: string} = {};
@@ -114,7 +116,7 @@ namespace Wappsto {
     function receiveHandler(data: string): void {
         let json = parseJSON(data);
         let val = json["data"];
-        if(data != null) {
+        if(val != null) {
             if(json["device"] != "1") {
                 return;
             }
@@ -122,12 +124,14 @@ namespace Wappsto {
             if(handlers[index] != null) {
                 handlers[index](val);
             }
-        } else {
-            gps_longitude = parseInt(json["lon"]);
-            gps_latitude = parseInt(json["lat"]);
+        } else if(Object.keys(json).length !== 0) {
+            gps_longitude = parseFloat(json["lon"]);
+            gps_latitude = parseFloat(json["lat"]);
             signal = parseInt(json["signal"]);
             connection_status = parseInt(json["status"]);
             connection_info = json["info"];
+            _time_utc = parseInt(json["utc_time"]);
+            _uptime = parseInt(json["uptime"]);
         }
     }
 
@@ -158,7 +162,6 @@ namespace Wappsto {
             });
         } else if(link=="i2c") {
             control.inBackground(() => {
-                let count: number = 0;
                 while (true) {
                     let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
                     let i = 0;
@@ -171,22 +174,35 @@ namespace Wappsto {
                         }
                         i++;
                     }
-
                     basic.pause(100);
-                    count++;
-                    if(count > 20) {
-                        writeCommand("info");
-                        count = 0;
-                    }
                 }
             });
         }
 
         basic.pause(100)
+
         let json: {[index: string]: string} = {};
         json["device"] = "1";
         json["name"] = name;
         writeToWappstobit(json);
+
+        //writeCommand("clean");
+
+        control.inBackground(() => {
+            while (true) {
+                writeCommand("info");
+                basic.pause(5000);
+            }
+        });
+
+//        for(let i=0; i < model.length; i++) {
+//            if(!model[i].sent) {
+//                writeToWappstobit(model[i].model);
+//                model[i].sent = true;
+//            }
+//        }
+//
+//        writeCommand("save");
     }
 
     /**
@@ -201,7 +217,7 @@ namespace Wappsto {
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
         switch(type) {
             case WappstoValueTemplate.Temperature:
-                configureNumberValue(valueID, name, "Temperature", -5, 50, 1, "C°");
+                configureNumberValue(valueID, name, "Temperature", -5, 50, 1, "°C");
                 break;
             case WappstoValueTemplate.Light:
                 configureNumberValue(valueID, name, "Light", 0, 255, 1, "lx");
@@ -353,5 +369,15 @@ namespace Wappsto {
     //% block="Carrier"
     export function carrier(): string {
         return connection_info;
+    }
+
+    //% block="Time UTC (epoch seconds)"
+    export function time_utc(): number {
+        return _time_utc;
+    }
+
+    //% block="Wappsto:bit Uptime"
+    export function uptime(): number {
+        return _uptime;
     }
 }
