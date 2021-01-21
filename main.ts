@@ -430,4 +430,29 @@ namespace Wappsto {
     export function wappstoConnected(): boolean {
         return wappsto_connected;
     }
+
+    //% blockId="wapp_configure_wifi"
+    //% block="configure Wifi network: %ssid %pass"
+    //% block.loc.da="konfigurer Wifi netværk: %ssid %pass"
+    //% ssid.defl="SSID" pass.defl="key"
+    export function configure_wif(ssid: string, pass: string): void {
+        let json: {[index: string]: string} = {};
+        json["command"] = "config_wifi";
+        json["ssid"] = ssid;
+        json["pass"] = pass;
+
+        writeToWappstobit(json);
+    }
+
+    //% blockId="wapp_configure_apn"
+    //% block="configure cellular APN: %apn"
+    //% block.loc.da="konfigurer mobilnetværk APN: %apn"
+    //% apn.defl="telenor.iot"
+    export function configure_apn(apn: string): void {
+        let json: {[index: string]: string} = {};
+        json["command"] = "config_apn";
+        json["apn"] = apn;
+
+        writeToWappstobit(json);
+    }
 }
