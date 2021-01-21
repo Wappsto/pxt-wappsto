@@ -349,7 +349,12 @@ namespace Wappsto {
     //% advanced=true
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     export function onNumberEvent(valueID: number, handler: (receivedNumber: number) => void) {
-        writeValueUpdate(1, valueID, "");
+        let json: {[index: string]: string} = {};
+        json["device"] = "1";
+        json["value"] = valueID.toString();
+
+        model[valueID] = json;
+        writeToWappstobit(json);
         handlers[valueID] = handler;
     }
 
@@ -363,7 +368,12 @@ namespace Wappsto {
     //% advanced=true
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     export function onStringEvent(valueID: number, handler: (receivedString: string) => void) {
-        writeValueUpdate(1, valueID, "");
+        let json: {[index: string]: string} = {};
+        json["device"] = "1";
+        json["value"] = valueID.toString();
+
+        model[valueID] = json;
+        writeToWappstobit(json);
         handlers[valueID] = handler;
     }
 
