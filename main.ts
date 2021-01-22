@@ -40,7 +40,7 @@ enum WappstoTransmit {
 /**
  * MakeCode extension for the Seluxit Wappsto:bit extension module
  */
-//% color=#03a6ef weight=90 icon="\uf213" block="Wappsto"
+//% color=#112034 weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', "Wappsto:bit information", "Wappsto:bit configuration" 'others']
 
 namespace Wappsto {
