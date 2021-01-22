@@ -40,7 +40,7 @@ enum WappstoTransmit {
 /**
  * MakeCode extension for the Seluxit Wappsto:bit extension module
  */
-//% color=#112034 weight=90 icon="\uf213" block="Wappsto"
+//% color=#1f324d weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', "Wappsto:bit information", "Wappsto:bit configuration" 'others']
 
 namespace Wappsto {
@@ -60,6 +60,7 @@ namespace Wappsto {
     let _time_utc: number = NaN;
     let _uptime: number = NaN;
     let wappsto_connected: boolean = false;
+    let queueFull: boolean = false;
 
     function parseJSON(data: string): {[index: string]: string} {
         let res: {[index: string]: string} = {};
@@ -112,6 +113,10 @@ namespace Wappsto {
             connect(bitName);
         }
 
+        while(queueFull) {
+            basic.pause(100);
+        }
+
         let data: string = generateJSON(json);
 
         if(link=="serial") {
@@ -144,9 +149,11 @@ namespace Wappsto {
             signal = parseInt(json["signal"]);
             let connection_status: string = json["status"] || "";
             let connection_info: string = json["network"] || "";
+            let wappstoReady: boolean = parseInt(json["ready"]) == 1
+            queueFull = parseInt(json["queue_full"]) == 1
             _time_utc = parseInt(json["utc_time"]);
             _uptime = parseInt(json["uptime"]);
-            if(connection_status.substr(0,9) == "Connected") {
+            if(wappstoReady) {
                 if (!wappsto_connected) {
                     wappsto_connected = true;
                     for(let i=0; i < model.length; i++) {
