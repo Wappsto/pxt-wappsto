@@ -62,32 +62,6 @@ namespace Wappsto {
     let wappsto_connected: boolean = false;
     let queueFull: boolean = false;
 
-    function parseJSON(data: string): {[index: string]: string} {
-        let res: {[index: string]: string} = {};
-        if(data.indexOf("{") == 0 && data.indexOf("}") != -1) {
-            data = data.replace("{","").replace("}","").replaceAll("\"","")
-            let aData = data.split(",");
-            for(let i=0; i < aData.length; i++) {
-                let arr: Array<string> = aData[i].split(":");
-                res[arr[0]] = arr[1];
-            }
-        }
-
-        return res;
-    }
-
-    function generateJSON(data: {[index: string]: string}): string {
-        let json: string = "";
-        let keys = Object.keys(data);
-        for(let i = 0; i < keys.length; i++) {
-            if(json != "") {
-                json += ",";
-            }
-            json += '"'+keys[i]+'":"'+data[keys[i]]+'"';
-        }
-        return '{'+json+'}';
-    }
-
     function writeCommand(cmd: string): void {
         let json = {"command": cmd};
         writeToWappstobit(json);
@@ -465,7 +439,7 @@ namespace Wappsto {
     //% ssid.defl="SSID" pass.defl="key"
     //% group="Wappsto:bit configuration"
     //% advanced=true
-    export function configure_wif(ssid: string, pass: string): void {
+    export function configure_wifi(ssid: string, pass: string): void {
         let json: {[index: string]: string} = {};
         json["command"] = "config_wifi";
         json["ssid"] = ssid;
