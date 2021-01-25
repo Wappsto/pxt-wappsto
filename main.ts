@@ -124,6 +124,8 @@ namespace Wappsto {
 
     function receiveHandler(data: string): void {
         let json = parseJSON(data);
+        let keys = Object.keys(json);
+
         let val = json["data"];
         if(val != null) {
             if(json["device"] != "1") {
@@ -133,27 +135,47 @@ namespace Wappsto {
             if(handlers[index] != null) {
                 handlers[index](val);
             }
-        } else if(Object.keys(json).length !== 0) {
-            gps_longitude = parseFloat(json["lon"]);
-            gps_latitude = parseFloat(json["lat"]);
-            signal = parseInt(json["signal"]);
-            let connection_status: string = json["status"] || "";
-            let connection_info: string = json["network"] || "";
-            let wappstoReady: boolean = parseInt(json["ready"]) == 1
-            queueFull = parseInt(json["queue_full"]) == 1
-            _time_utc = parseInt(json["utc_time"]);
-            _uptime = parseInt(json["uptime"]);
-            if(wappstoReady) {
-                if (!wappsto_connected) {
-                    wappsto_connected = true;
-                    for(let i=0; i < model.length; i++) {
-                        if(model[i]) {
-                            writeToWappstobit(model[i]);
+        } else {
+            for(let i = 0; i < keys.length; i++) {
+                switch(keys[i]) {
+                    case "lon":
+                        gps_longitude = parseFloat(json["lon"]);
+                        break;
+                    case "lat":
+                        gps_latitude = parseFloat(json["lat"]);
+                        break;
+                    case "signal":
+                        signal = parseInt(json["signal"]);
+                        break;
+                    case "status":
+                        connection_status = json["status"];
+                        break;
+                    case "network":
+                        connection_info = json["network"];
+                        break;
+                    case "ready":
+                        let wappstoReady: boolean = parseInt(json["ready"]) == 1
+                        if(wappstoReady && !wappsto_connected) {
+                            wappsto_connected = true;
+                            for(let i=0; i < model.length; i++) {
+                                if(model[i]) {
+                                    writeToWappstobit(model[i]);
+                                }
+                            }
+                        } else if(!wappstoReady) {
+                            wappsto_connected = false;
                         }
-                    }
+
+                        break;
+                    case "queue_full":
+                        queueFull = parseInt(json["queue_full"]) == 1
+                        break;
+                    case "utc_time":
+                        _time_utc = parseInt(json["utc_time"]);
+                        break;
+                    case "uptime":
+                        _uptime = parseInt(json["uptime"]);
                 }
-            } else {
-                wappsto_connected = false;
             }
         }
     }
