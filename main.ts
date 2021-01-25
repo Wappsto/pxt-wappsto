@@ -103,7 +103,7 @@ namespace Wappsto {
             connect(bitName);
         }
 
-        while(queueFull) {
+        while((json["data"] != null || json["cmd"] == "clean") && queueFull) {
             basic.pause(100);
         }
 
@@ -208,10 +208,8 @@ namespace Wappsto {
         let json: {[index: string]: string} = {};
         json["device"] = "1";
         json["name"] = name;
-        json["pxt_version"] = _version;
+        json["version"] = _version;
         writeToWappstobit(json);
-
-        //writeCommand("clean");
 
         control.inBackground(() => {
             while (true) {
@@ -484,7 +482,7 @@ namespace Wappsto {
     //% advanced=true
     export function configure_wifi(ssid: string, pass: string): void {
         let json: {[index: string]: string} = {};
-        json["command"] = "config_wifi";
+        json["cmd"] = "config_wifi";
         json["ssid"] = ssid;
         json["pass"] = pass;
 
@@ -502,7 +500,7 @@ namespace Wappsto {
     //% advanced=true
     export function configure_apn(apn: string): void {
         let json: {[index: string]: string} = {};
-        json["command"] = "config_apn";
+        json["cmd"] = "config_apn";
         json["apn"] = apn;
 
         writeToWappstobit(json);
