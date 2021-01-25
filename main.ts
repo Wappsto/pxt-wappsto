@@ -33,6 +33,7 @@ enum WappstoTransmit {
 //% groups=['Data model', 'Wappsto basic flow', "Wappsto:bit information", "Wappsto:bit configuration" 'others']
 
 namespace Wappsto {
+    let _version = "0.0.1"
     let connected = false
     let bitName = "Wappsto:bit"
     let link = "i2c"
@@ -207,6 +208,7 @@ namespace Wappsto {
         let json: {[index: string]: string} = {};
         json["device"] = "1";
         json["name"] = name;
+        json["pxt_version"] = _version;
         writeToWappstobit(json);
 
         //writeCommand("clean");
