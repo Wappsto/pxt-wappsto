@@ -36,7 +36,6 @@ namespace Wappsto {
     let _version = "0.0.1"
     let connected = false
     let bitName = "Wappsto:bit"
-    let link = "i2c"
     let i2cDevice = 0x11
     let bufferSize = 200
     let handlers: any[] = []
@@ -109,17 +108,13 @@ namespace Wappsto {
 
         let data: string = generateJSON(json);
 
-        if(link=="serial") {
-            serial.writeString(data+'\n');
-        } else if(link=="i2c") {
-            let buffer = pins.createBuffer(data.length + 1);
-            buffer.setNumber(NumberFormat.UInt8LE, data.length, 0x00)
-            for (let i = 0; i < data.length; i++) {
-                buffer.setNumber(NumberFormat.UInt8LE, i, data.charCodeAt(i))
-            }
-            serial.writeString('BitTx ('+buffer.length+'): '+data+'\n')
-            pins.i2cWriteBuffer(i2cDevice, buffer, false)
+        let buffer = pins.createBuffer(data.length + 1);
+        buffer.setNumber(NumberFormat.UInt8LE, data.length, 0x00)
+        for (let i = 0; i < data.length; i++) {
+            buffer.setNumber(NumberFormat.UInt8LE, i, data.charCodeAt(i))
         }
+        serial.writeString('BitTx ('+buffer.length+'): '+data+'\n')
+        pins.i2cWriteBuffer(i2cDevice, buffer, false)
     }
 
     function receiveHandler(data: string): void {
@@ -195,35 +190,22 @@ namespace Wappsto {
 
         connected = true;
         bitName = name;
-        if(link=="serial") {
-            serial.redirect(
-                SerialPin.P8,
-                SerialPin.P16,
-                BaudRate.BaudRate115200
-            )
-            serial.setRxBufferSize(200)
-            serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
-                let data = serial.readLine();
-                receiveHandler(data)
-            });
-        } else if(link=="i2c") {
-            control.inBackground(() => {
-                while (true) {
-                    let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
-                    let i = 0;
-                    while (bufr[i] != 255 && i < 200) {
-                        if (i > 0 && bufr[i] == 0x00 && bufr[i-1] !=0x00) {
-                            let data = bufr.slice(0,i).toString();
-                            serial.writeString('BitRx ('+data.length+'): ' + data+ '\n');
-                            receiveHandler(data+'\n');
-                            break;
-                        }
-                        i++;
+        control.inBackground(() => {
+            while (true) {
+                let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
+                let i = 0;
+                while (bufr[i] != 255 && i < 200) {
+                    if (i > 0 && bufr[i] == 0x00 && bufr[i-1] !=0x00) {
+                        let data = bufr.slice(0,i).toString();
+                        serial.writeString('BitRx ('+data.length+'): ' + data+ '\n');
+                        receiveHandler(data+'\n');
+                        break;
                     }
-                    basic.pause(100);
+                    i++;
                 }
-            });
-        }
+                basic.pause(100);
+            }
+        });
 
         basic.pause(100)
 
