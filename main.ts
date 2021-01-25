@@ -1,44 +1,33 @@
 enum WappstoValueTemplate {
     //% block="Temperature"
-    //% block.loc.da="Temperatur"
     Temperature,
     //% block="Light level"
-    //% block.loc.da="Lys niveau"
     Light,
     //% block="Compass"
-    //% block.loc.da="Kompas"
     Compass,
     //% block="Acceleration"
-    //% block.loc.da="Acceleration"
     Acceleration,
     //% block="Rotation"
-    //% block.loc.da="Rotation"
     Rotation,
     //% block="Magnetometer"
-    //% block.loc.da="Magnetometer"
     Magnetic,
     //% block="Number"
-    //% block.loc.da="Nummer"
     Number,
     //% block="Latitude"
-    //% block.loc.da="Breddegrad"
     Latitude,
     //% block="Longitude"
-    //% block.loc.da="Længdegrad"
     Longitude,
 }
 
 enum WappstoTransmit {
     //% block="If changed"
-    //% block.loc.da="Hvis ændret"
     OnChange,
     //% block="When possible"
-    //% block.loc.da="Når muligt"
     ASAP,
 }
 
 /**
- * MakeCode extension for the Seluxit Wappsto:bit extension module
+ * MakeCode extension for the Seluxit Wappsto:bit extension module.
  */
 //% color=#1f324d weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', "Wappsto:bit information", "Wappsto:bit configuration" 'others']
@@ -169,12 +158,11 @@ namespace Wappsto {
     }
 
     /**
-     * Connects to Wappsto using Wappsto:bit
+     * Connects to Wappsto using Wappsto:bit.
      * @param name The name of your Micro:bit
      */
     //% weight=80
     //% blockId="wapp_microbit_connect" block="connect %name to Wappsto by Seluxit"
-    //% block.loc.da="forbind %name til Wappsto"
     //% name.defl=MicroBit
     //% group="Wappsto basic flow"
     export function connect(name: string): void {
@@ -233,11 +221,13 @@ namespace Wappsto {
 
     /**
      * Configure a Wappsto value.
+     * @param valueID The id of the value to send
+     * @param name The name of the value as seen on Wappsto
+     * @param type The type of the value as seen on Wappsto
      */
     //% weight=90
     //% blockId="wapp_configure_value"
     //% block="setup Wappsto Number Value %valueID with name %name as %type"
-    //% block.loc.da="opsæt Wappsto Nummer Værdi %valueID med navn %name som %type"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyValue"
     //% type.defl=WappstoValueTemplate.Number
@@ -277,11 +267,17 @@ namespace Wappsto {
 
     /**
      * Configure Wappsto number value.
+     * @param valueID The id of the value to send
+     * @param name The name of the value as seen on Wappsto
+     * @param type The type of the value as seen on Wappsto
+     * @param min The minimum value of the number
+     * @param max The maximum value of the number
+     * @param step The increment size of the number
+     * @param unit The unit as seen on Wappsto
      */
     //% weight=90
     //% blockId="wapp_configure_number_value"
     //% block="setup Wappsto Number Value %valueID Name: %name Type: %type||Min: %min Max: %max Step: %step Unit: %unit"
-    //% block.loc.da="opsæt Wappsto Nummer Værdi %valueID Navn: %name Type: %type||Min: %min Maks: %max Trin: %step Enhed: %unit"
     //% expandableArgumentMode="toggle"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyNumber" type.defl="Number" min.defl=0 max.defl=255 step.defl=1
@@ -305,11 +301,13 @@ namespace Wappsto {
 
     /**
      * Configure Wappsto string value.
+     * @param valueID The id of the string to send
+     * @param name The name of the string value as seen on Wappsto
+     * @param type The type of the string value as seen on Wappsto (optional)
      */
     //% weight=90
     //% blockId="wapp_configure_string_value"
     //% block="setup Wappsto String Value %valueID with name %name as type %type"
-    //% block.loc.da="opsæt Wappsto Streng Værdi %valueID med navn %name som type %type"
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% name.defl="MyString" type.defl="String"
     //% group="Data model"
@@ -328,10 +326,10 @@ namespace Wappsto {
      * Send the state of a number value to Wappsto.
      * @param input The new value to send
      * @param valueID The id of the value to send
+     * @param behaviour Default sending behaviour.
      */
     //% weight=65
     //% blockId="wapp_number_value" block="send number %input to Wappsto Number Value %valueID||%behaviour"
-    //% block.loc.da="send nummer %input til Wappsto for Nummer Værdi %valueID||%behaviour"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
@@ -343,10 +341,10 @@ namespace Wappsto {
      * Send the state of a string value to Wappsto.
      * @param input The new value to send
      * @param valueID The id of the value to send
+     * @param behaviour Default sending behaviour.
      */
     //% weight=60
     //% blockId="wapp_string_value" block="send string %input to Wappsto String Value %valueID||%behaviour"
-    //% block.loc.da="send strengen %input til Wappsto Streng Værdi %valueID||%behaviour"
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
@@ -356,11 +354,11 @@ namespace Wappsto {
 
     /**
      * Event handler for Wappsto number events.
+     * @param valueID The id of the number value to handle
      */
     //% blockID="wappsto_number_event"
     //% block="on Number Value %valueID received from Wappsto"
     //% weight=45
-    //% block.loc.da="når Nummer Værdien %valueID modtages fra Wappsto"
     //% draggableParameters
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% group="Wappsto basic flow"
@@ -376,11 +374,11 @@ namespace Wappsto {
 
     /**
      * Event handler for Wappsto string events.
+     * @param valueID The id of the string value to handle
      */
     //% blockID="wappsto_string_event"
     //% weight=40
     //% block="on String Value %valueID received from Wappsto"
-    //% block.loc.da="når Streng Værdien %valueID modtages fra Wappsto"
     //% draggableParameters
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% group="Wappsto basic flow"
@@ -400,72 +398,89 @@ namespace Wappsto {
     //% weight=40
     //% advanced=true
     //% blockId="wapp_clean" block="send request to clear Wappsto"
-    //% block.loc.da="fjern gamle værdier i Wappsto"
     //% group="Data model"
     export function sendCleanToWappsto(): void {
         writeCommand("clean");
     }
 
+    /**
+     * Input block returning the longitude of the Wappsto:bit. NaN if not available.
+     */
     //% block="GPS longitude"
     //% group="Wappsto:bit information"
-    //% block.loc.da="GPS-længdegrad"
     export function longitude(): number {
         return gps_longitude;
     }
 
+    /**
+     * Input block returning the latitude of the Wappsto:bit. NaN if not available.
+     */
     //% block="GPS latitude"
     //% group="Wappsto:bit information"
-    //% block.loc.da="GPS-breddegrad"
     export function latitude(): number {
         return gps_latitude;
     }
 
+    /**
+     * Input block returning the signal quality of the network link [0-100%].
+     */
     //% block="Signal quality"
-    //% block.loc.da="Signalstyrke"
     //% group="Wappsto:bit information"
     //% advanced=true
     export function signalQuality(): number {
         return signal;
     }
 
+    /**
+     * Input block returning the network name of which the Wappsto:bit is connected.
+     */
     //% block="Network Name"
-    //% block.loc.da="Netværksnavn"
     //% group="Wappsto:bit information"
     //% advanced=true
     export function carrier(): string {
         return connection_info;
     }
 
+    /**
+     * Input block returning the Wappsto:bit UTC time in seconcs.
+     */
     //% block="UTC Time (UNIX timestamp)"
-    //% block.loc.da="UTC-tid (UNIX tidsstempel)"
     //% group="Wappsto:bit information"
     //% advanced=true
     export function time_utc(): number {
         return _time_utc;
     }
 
+    /**
+     * Input block returning the Wappsto:bit uptime. I.e. time in seconds since last power cycle.
+     */
     //% block="Wappsto:bit Uptime"
-    //% block.loc.da="Wappsto:bit oppetid"
     //% group="Wappsto:bit information"
     //% advanced=true
     export function uptime(): number {
         return _uptime;
     }
 
+    /**
+     * Conditional block returning a boolean flag to signal whether or not Wappsto:bit is fully connected and ready.
+     */
     //% block="Wappsto:bit is online"
     //% group="Wappsto:bit information"
-    //% block.loc.da="Wappsto:bit er online"
     export function wappstoConnected(): boolean {
         return wappsto_connected;
     }
 
+    /**
+     * Configurere the SSID to which the Wappsto:bit connects when on Wi-Fi network.
+     * @param ssid The SSID to connect to
+     * @param password The Wi-Fi password
+     */
     //% blockId="wapp_configure_wifi"
     //% block="configure Wifi network: %ssid %pass"
-    //% block.loc.da="konfigurer Wifi netværk: %ssid %pass"
     //% ssid.defl="SSID" pass.defl="key"
     //% group="Wappsto:bit configuration"
     //% advanced=true
-    export function configure_wif(ssid: string, pass: string): void {
+    export function configure_wifi(ssid: string, pass: string): void {
         let json: {[index: string]: string} = {};
         json["command"] = "config_wifi";
         json["ssid"] = ssid;
@@ -474,9 +489,12 @@ namespace Wappsto {
         writeToWappstobit(json);
     }
 
+    /**
+     * Configurere the APN to which the Wappsto:bit connects when on cellular network.
+     * @param apn The APN string
+     */
     //% blockId="wapp_configure_apn"
     //% block="configure cellular APN: %apn"
-    //% block.loc.da="konfigurer mobilnetværk APN: %apn"
     //% apn.defl="telenor.iot"
     //% group="Wappsto:bit configuration"
     //% advanced=true

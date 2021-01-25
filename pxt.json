@@ -1,14 +1,20 @@
 {
     "name": "pxt-wappsto",
     "version": "0.0.1",
-    "description": "MakeCode extension for Wappsto NB-IoT module",
+    "description": "MakeCode extension for Wappsto:bit IoT module",
     "dependencies": {
         "core": "*",
         "microphone": "*"
     },
     "files": [
         "README.md",
-        "main.ts"
+        "main.ts",
+        "_locales/en/pxt-wappsto-jsdoc-strings.json",
+        "_locales/en/pxt-wappsto-strings.json",
+        "_locales/da/pxt-wappsto-jsdoc-strings.json",
+        "_locales/da/pxt-wappsto-strings.json",
+        "_locales/de/pxt-wappsto-jsdoc-strings.json",
+        "_locales/de/pxt-wappsto-strings.json"
     ],
     "testFiles": [
         "test.ts"
