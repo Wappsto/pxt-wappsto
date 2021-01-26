@@ -30,8 +30,8 @@
   "WappstoValueTemplate.Temperature|block": "Temperatur",
   "Wappsto|block": "Wappsto",
   "{id:category}Wappsto": "Wappsto",
-  "{id:group}Data model": "Data model",
-  "{id:group}Wappsto basic flow": "Wappsto basic flow",
-  "{id:group}Wappsto:bit configuration": "Wappsto:bit configuration",
-  "{id:group}Wappsto:bit information": "Wappsto:bit information"
+  "{id:group}Data model": "Datenmodell",
+  "{id:group}Wappsto basic flow": "Wappsto Basisblöcke",
+  "{id:group}Wappsto:bit configuration": "Wappsto:bit Konfiguration",
+  "{id:group}Wappsto:bit information": "Wappsto:bit Informationen"
 }
