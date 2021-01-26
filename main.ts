@@ -102,7 +102,7 @@ namespace Wappsto {
             connect(bitName);
         }
 
-        while((json["data"] != null || json["cmd"] == "clean") && queueFull) {
+        while((json["data"] != null || json["command"] == "clean") && queueFull) {
             basic.pause(100);
         }
 
@@ -184,7 +184,16 @@ namespace Wappsto {
     //% name.defl=MicroBit
     //% group="Wappsto basic flow"
     export function connect(name: string): void {
+        let json: {[index: string]: string} = {};
+
         if(connected) {
+            if(name != bitName) {
+                bitName = name;
+                json["device"] = "1";
+                json["name"] = name;
+                json["version"] = _version;
+                writeToWappstobit(json);
+            }
             return;
         }
 
@@ -209,7 +218,6 @@ namespace Wappsto {
 
         basic.pause(100)
 
-        let json: {[index: string]: string} = {};
         json["device"] = "1";
         json["name"] = name;
         json["version"] = _version;
@@ -486,7 +494,7 @@ namespace Wappsto {
     //% advanced=true
     export function configure_wifi(ssid: string, pass: string): void {
         let json: {[index: string]: string} = {};
-        json["cmd"] = "config_wifi";
+        json["command"] = "config_wifi";
         json["ssid"] = ssid;
         json["pass"] = pass;
 
@@ -504,7 +512,7 @@ namespace Wappsto {
     //% advanced=true
     export function configure_apn(apn: string): void {
         let json: {[index: string]: string} = {};
-        json["cmd"] = "config_apn";
+        json["command"] = "config_apn";
         json["apn"] = apn;
 
         writeToWappstobit(json);
