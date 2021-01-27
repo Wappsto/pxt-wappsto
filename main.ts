@@ -29,26 +29,25 @@ enum WappstoTransmit {
 /**
  * MakeCode extension for the Seluxit Wappsto:bit extension module.
  */
-//% color=#1f324d weight=90 icon="\uf213" block="Wappsto"
-//% groups=['Data model', 'Wappsto basic flow', "Wappsto:bit information", "Wappsto:bit configuration" 'others']
-
-namespace Wappsto {
-    let _version = "0.0.1"
-    let connected = false
+//% color="#1f324d" weight=90 icon="\uf213" block="Wappsto"
+//% groups=['Data model', 'Wappsto basic flow', 'Wappsto:bit information', 'Wappsto:bit configuration']
+namespace wappsto {
+    let version = "0.0.1"
+    let microbitConnected = false
     let bitName = "Wappsto:bit"
     let i2cDevice = 0x11
     let bufferSize = 200
     let handlers: any[] = []
     let model: {[index: string]: string}[] = []
-    let old_value: any[] = []
-    let gps_longitude: number = NaN;
-    let gps_latitude: number = NaN;
+    let oldValue: any[] = []
+    let gpsLongitude: number = NaN;
+    let gpsLatitude: number = NaN;
     let signal: number = 0;
-    let connection_status: string = "";
-    let connection_info: string = "";
-    let _time_utc: number = NaN;
-    let _uptime: number = NaN;
-    let wappsto_connected: boolean = false;
+    let connectionStatus: string = "";
+    let connectionInfo: string = "";
+    let wappstoUtctime: number = NaN;
+    let wappstoUptime: number = NaN;
+    let wappstoConnected: boolean = false;
     let queueFull: boolean = false;
 
     function parseJSON(data: string): {[index: string]: string} {
@@ -77,6 +76,54 @@ namespace Wappsto {
         return '{'+json+'}';
     }
 
+    function connect(name: string): void {
+        let json: {[index: string]: string} = {};
+
+        if(microbitConnected) {
+            if(name != bitName) {
+                bitName = name;
+                json["device"] = "1";
+                json["name"] = name;
+                json["version"] = version;
+                writeToWappstobit(json);
+            }
+            return;
+        }
+
+        microbitConnected = true;
+        bitName = name;
+        control.inBackground(() => {
+            while (true) {
+                let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
+                let i = 0;
+                while (bufr[i] != 255 && i < 200) {
+                    if (i > 0 && bufr[i] == 0x00 && bufr[i-1] !=0x00) {
+                        let data = bufr.slice(0,i).toString();
+                        serial.writeString('BitRx ('+data.length+'): ' + data+ '\n');
+                        receiveHandler(data+'\n');
+                        break;
+                    }
+                    i++;
+                }
+                basic.pause(100);
+            }
+        });
+
+        basic.pause(100)
+
+        json["device"] = "1";
+        json["name"] = name;
+        json["version"] = version;
+        writeToWappstobit(json);
+
+        control.inBackground(() => {
+            while (true) {
+                writeCommand("info");
+                basic.pause(5000);
+            }
+        });
+    }
+
     function writeCommand(cmd: string): void {
         let json = {"command": cmd};
         writeToWappstobit(json);
@@ -84,10 +131,10 @@ namespace Wappsto {
 
     function writeValueUpdate(device: number, value: number, data: string = null, behaviour: WappstoTransmit = WappstoTransmit.ASAP): void {
         if(behaviour == WappstoTransmit.OnChange) {
-            if(data == old_value[value]) {
+            if(data == oldValue[value]) {
                 return
             }
-            old_value[value] = data
+            oldValue[value] = data
         }
 
         let json: {[index: string]: string} = {};
@@ -98,7 +145,7 @@ namespace Wappsto {
     }
 
     function writeToWappstobit(json: {[index: string]: string}): void {
-        if(!connected) {
+        if(!microbitConnected) {
             connect(bitName);
         }
 
@@ -131,34 +178,41 @@ namespace Wappsto {
                 handlers[index](val);
             }
         } else {
+            let tmp = 0;
             for(let i = 0; i < keys.length; i++) {
                 switch(keys[i]) {
                     case "lon":
-                        gps_longitude = parseFloat(json["lon"]);
+                        tmp = parseFloat(json["lon"]);
+                        if(tmp != 0.0) {
+                            gpsLongitude = tmp;
+                        }
                         break;
                     case "lat":
-                        gps_latitude = parseFloat(json["lat"]);
+                        tmp = parseFloat(json["lat"]);
+                        if(tmp != 0.0) {
+                            gpsLatitude = tmp;
+                        }
                         break;
                     case "signal":
                         signal = parseInt(json["signal"]);
                         break;
                     case "status":
-                        connection_status = json["status"];
+                        connectionStatus = json["status"];
                         break;
                     case "network":
-                        connection_info = json["network"];
+                        connectionInfo = json["network"];
                         break;
                     case "ready":
                         let wappstoReady: boolean = parseInt(json["ready"]) == 1
-                        if(wappstoReady && !wappsto_connected) {
-                            wappsto_connected = true;
+                        if(wappstoReady && !wappstoConnected) {
+                            wappstoConnected = true;
                             for(let i=0; i < model.length; i++) {
                                 if(model[i]) {
                                     writeToWappstobit(model[i]);
                                 }
                             }
                         } else if(!wappstoReady) {
-                            wappsto_connected = false;
+                            wappstoConnected = false;
                         }
 
                         break;
@@ -166,69 +220,25 @@ namespace Wappsto {
                         queueFull = parseInt(json["queue_full"]) == 1
                         break;
                     case "utc_time":
-                        _time_utc = parseInt(json["utc_time"]);
+                        wappstoUtctime = parseInt(json["utc_time"]);
                         break;
                     case "uptime":
-                        _uptime = parseInt(json["uptime"]);
+                        wappstoUptime = parseInt(json["uptime"]);
                 }
             }
         }
     }
 
     /**
-     * Connects to Wappsto using Wappsto:bit.
+     * Configure the name of your Micro:bit on Wappsto.
      * @param name The name of your Micro:bit
      */
     //% weight=80
-    //% blockId="wapp_microbit_connect" block="connect %name to Wappsto by Seluxit"
-    //% name.defl=MicroBit
+    //% blockId="wapp_configure_name" block="setup the %name of your Micro:bit on Wappsto"
+    //% name.defl="Micro:bit"
     //% group="Wappsto basic flow"
-    export function connect(name: string): void {
-        let json: {[index: string]: string} = {};
-
-        if(connected) {
-            if(name != bitName) {
-                bitName = name;
-                json["device"] = "1";
-                json["name"] = name;
-                json["version"] = _version;
-                writeToWappstobit(json);
-            }
-            return;
-        }
-
-        connected = true;
-        bitName = name;
-        control.inBackground(() => {
-            while (true) {
-                let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
-                let i = 0;
-                while (bufr[i] != 255 && i < 200) {
-                    if (i > 0 && bufr[i] == 0x00 && bufr[i-1] !=0x00) {
-                        let data = bufr.slice(0,i).toString();
-                        serial.writeString('BitRx ('+data.length+'): ' + data+ '\n');
-                        receiveHandler(data+'\n');
-                        break;
-                    }
-                    i++;
-                }
-                basic.pause(100);
-            }
-        });
-
-        basic.pause(100)
-
-        json["device"] = "1";
-        json["name"] = name;
-        json["version"] = _version;
-        writeToWappstobit(json);
-
-        control.inBackground(() => {
-            while (true) {
-                writeCommand("info");
-                basic.pause(5000);
-            }
-        });
+    export function configureName(name: string): void {
+        connect(name);
     }
 
     /**
@@ -244,7 +254,6 @@ namespace Wappsto {
     //% name.defl="MyValue"
     //% type.defl=WappstoValueTemplate.Number
     //% group="Data model"
-
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
         switch(type) {
             case WappstoValueTemplate.Temperature:
@@ -421,7 +430,7 @@ namespace Wappsto {
     //% block="GPS longitude"
     //% group="Wappsto:bit information"
     export function longitude(): number {
-        return gps_longitude;
+        return gpsLongitude;
     }
 
     /**
@@ -430,7 +439,7 @@ namespace Wappsto {
     //% block="GPS latitude"
     //% group="Wappsto:bit information"
     export function latitude(): number {
-        return gps_latitude;
+        return gpsLatitude;
     }
 
     /**
@@ -450,7 +459,7 @@ namespace Wappsto {
     //% group="Wappsto:bit information"
     //% advanced=true
     export function carrier(): string {
-        return connection_info;
+        return connectionInfo;
     }
 
     /**
@@ -459,8 +468,8 @@ namespace Wappsto {
     //% block="UTC Time (UNIX timestamp)"
     //% group="Wappsto:bit information"
     //% advanced=true
-    export function time_utc(): number {
-        return _time_utc;
+    export function timeUtc(): number {
+        return wappstoUtctime;
     }
 
     /**
@@ -470,7 +479,7 @@ namespace Wappsto {
     //% group="Wappsto:bit information"
     //% advanced=true
     export function uptime(): number {
-        return _uptime;
+        return wappstoUptime;
     }
 
     /**
@@ -478,8 +487,8 @@ namespace Wappsto {
      */
     //% block="Wappsto:bit is online"
     //% group="Wappsto:bit information"
-    export function wappstoConnected(): boolean {
-        return wappsto_connected;
+    export function connected(): boolean {
+        return wappstoConnected;
     }
 
     /**
@@ -492,7 +501,7 @@ namespace Wappsto {
     //% ssid.defl="SSID" pass.defl="key"
     //% group="Wappsto:bit configuration"
     //% advanced=true
-    export function configure_wifi(ssid: string, pass: string): void {
+    export function configureWifi(ssid: string, pass: string): void {
         let json: {[index: string]: string} = {};
         json["command"] = "config_wifi";
         json["ssid"] = ssid;
@@ -510,7 +519,7 @@ namespace Wappsto {
     //% apn.defl="telenor.iot"
     //% group="Wappsto:bit configuration"
     //% advanced=true
-    export function configure_apn(apn: string): void {
+    export function configureApn(apn: string): void {
         let json: {[index: string]: string} = {};
         json["command"] = "config_apn";
         json["apn"] = apn;
