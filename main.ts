@@ -40,12 +40,12 @@ namespace wappsto {
     let handlers: any[] = []
     let model: {[index: string]: string}[] = []
     let oldValue: any[] = []
-    let gpsLongitude: number = 0;
-    let gpsLatitude: number = 0;
+    let gpsLongitude: number = NaN;
+    let gpsLatitude: number = NaN;
     let signal: number = 0;
     let connectionStatus: string = "";
     let connectionInfo: string = "";
-    let wappstoUtctime: number = NaN;
+    let wappstoTime: number = NaN;
     let wappstoUptime: number = NaN;
     let wappstoConnected: boolean = false;
     let queueFull: boolean = false;
@@ -220,7 +220,7 @@ namespace wappsto {
                         queueFull = parseInt(json["queue_full"]) == 1
                         break;
                     case "utc_time":
-                        wappstoUtctime = parseInt(json["utc_time"]);
+                        wappstoTime = parseInt(json["utc_time"]);
                         break;
                     case "uptime":
                         wappstoUptime = parseInt(json["uptime"]);
@@ -468,8 +468,8 @@ namespace wappsto {
     //% block="UTC Time (UNIX timestamp)"
     //% group="Wappsto:bit information"
     //% advanced=true
-    export function timeUtc(): number {
-        return wappstoUtctime;
+    export function time(): number {
+        return wappstoTime;
     }
 
     /**
