@@ -40,8 +40,8 @@ namespace wappsto {
     let handlers: any[] = []
     let model: {[index: string]: string}[] = []
     let oldValue: any[] = []
-    let gpsLongitude: number = NaN;
-    let gpsLatitude: number = NaN;
+    let gpsLongitude: number = 0;
+    let gpsLatitude: number = 0;
     let signal: number = 0;
     let connectionStatus: string = "";
     let connectionInfo: string = "";
@@ -236,7 +236,7 @@ namespace wappsto {
     //% weight=80
     //% blockId="wapp_configure_name" block="setup the %name of your Micro:bit on Wappsto"
     //% name.defl="Micro:bit"
-    //% group="Wappsto basic flow"
+    //% group="Data model"
     export function configureName(name: string): void {
         connect(name);
     }
@@ -498,7 +498,7 @@ namespace wappsto {
      */
     //% blockId="wapp_configure_wifi"
     //% block="configure Wifi network: %ssid %pass"
-    //% ssid.defl="SSID" pass.defl="key"
+    //% ssid.defl="SSID" pass.defl="password"
     //% group="Wappsto:bit configuration"
     //% advanced=true
     export function configureWifi(ssid: string, pass: string): void {
