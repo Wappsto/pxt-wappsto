@@ -487,7 +487,7 @@ namespace wappsto {
     }
 
     /**
-     * Input block returning the network name of which the Wappsto:bit is connected.
+     * Input block returning the network name of which the Wappsto:bit is connected to.
      */
     //% block="Network Name"
     //% group="Wappsto:bit information"
@@ -497,7 +497,7 @@ namespace wappsto {
     }
 
     /**
-     * Input block returning the Wappsto:bit UTC time in seconcs.
+     * Input block returning the Wappsto:bit UTC time in seconds.
      */
     //% block="UTC Time (UNIX timestamp)"
     //% group="Wappsto:bit information"

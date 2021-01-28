@@ -1,4 +1,4 @@
-all: deploy
+all: test
 
 build:
 	pxt build
@@ -8,6 +8,9 @@ deploy:
 
 test:
 	pxt test
+
+clean:
+	pxt clean
 
 update:
 	npm install pxt
