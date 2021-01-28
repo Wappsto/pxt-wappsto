@@ -32,7 +32,7 @@ enum WappstoTransmit {
 //% color="#1f324d" weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', 'Wappsto:bit information', 'Wappsto:bit configuration']
 namespace wappsto {
-    let version = "0.0.1"
+    let version = "1.0.0"
     let microbitConnected = false
     let bitName = "Wappsto:bit"
     let i2cDevice = 0x11
