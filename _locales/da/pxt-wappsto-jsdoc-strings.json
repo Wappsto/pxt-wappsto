@@ -3,7 +3,7 @@
   "wappsto.carrier": "Inputblok, der returnerer det netværksnavn, som Wappsto:bit er tilsluttet.",
   "wappsto.configureNumberValue": "Konfigurer Wappsto nummer værdi.",
   "wappsto.configureNumberValue|param|max": "Den maksimale værdi af tallet",
-  "wappsto.configureNumberValue|param|min": "Minimumsværdien af ​​tallet",
+  "wappsto.configureNumberValue|param|min": "Minimumsværdien af tallet",
   "wappsto.configureNumberValue|param|name": "Navnet på værdien set på Wappsto",
   "wappsto.configureNumberValue|param|step": "Forøgelsesstørrelsen på tallet (dvs. opløsningen)",
   "wappsto.configureNumberValue|param|type": "Typen af værdien set på Wappsto",
