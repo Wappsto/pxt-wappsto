@@ -154,14 +154,48 @@ namespace wappsto {
         }
 
         let data: string = generateJSON(json);
+        let buffer = toUTF8Buffer(data)
 
-        let buffer = pins.createBuffer(data.length + 1);
-        buffer.setNumber(NumberFormat.UInt8LE, data.length, 0x00)
-        for (let i = 0; i < data.length; i++) {
-            buffer.setNumber(NumberFormat.UInt8LE, i, data.charCodeAt(i))
-        }
         serial.writeString('BitTx ('+buffer.length+'): '+data+'\n')
         pins.i2cWriteBuffer(i2cDevice, buffer, false)
+    }
+
+    function toUTF8Buffer(str: string) {
+        let utf8 = [];
+        for (let i=0; i < str.length; i++) {
+            let  charcode = str.charCodeAt(i);
+            if (charcode < 0x80) utf8.push(charcode);
+            else if (charcode < 0x800) {
+                utf8.push(0xc0 | (charcode >> 6));
+                utf8.push(0x80 | (charcode & 0x3f));
+            }
+            else if (charcode < 0xd800 || charcode >= 0xe000) {
+                utf8.push(0xe0 | (charcode >> 12));
+                utf8.push(0x80 | ((charcode>>6) & 0x3f));
+                utf8.push(0x80 | (charcode & 0x3f));
+            }
+            // surrogate pair
+            else {
+                i++;
+                // UTF-16 encodes 0x10000-0x10FFFF by
+                // subtracting 0x10000 and splitting the
+                // 20 bits of 0x0-0xFFFFF into two halves
+                charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+                          | (str.charCodeAt(i) & 0x3ff));
+                utf8.push(0xf0 | (charcode >>18));
+                utf8.push(0x80 | ((charcode>>12) & 0x3f));
+                utf8.push(0x80 | ((charcode>>6) & 0x3f));
+                utf8.push(0x80 | (charcode & 0x3f));
+            }
+        }
+
+        let buffer = pins.createBuffer(utf8.length + 1);
+        buffer.setNumber(NumberFormat.UInt8LE, utf8.length, 0x00)
+        for (let i = 0; i < utf8.length; i++) {
+            buffer.setNumber(NumberFormat.UInt8LE, i, utf8[i])
+        }
+
+        return buffer;
     }
 
     function receiveHandler(data: string): void {
@@ -257,31 +291,31 @@ namespace wappsto {
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
         switch(type) {
             case WappstoValueTemplate.Temperature:
-                configureNumberValue(valueID, name, "Temperature", -5, 50, 1, "°C");
+                configureNumberValue(valueID, name, "Temperature", -5, 50, 1, "\u00B0C");
                 break;
             case WappstoValueTemplate.Light:
                 configureNumberValue(valueID, name, "Light", 0, 255, 1, "lx");
                 break;
             case WappstoValueTemplate.Compass:
-                configureNumberValue(valueID, name, "Compass", 0, 360, 1, "°");
+                configureNumberValue(valueID, name, "Compass", 0, 360, 1, "\u00B0");
                 break;
             case WappstoValueTemplate.Acceleration:
                 configureNumberValue(valueID, name, "Acceleration", -1024, 1024, 1, "mg");
                 break;
             case WappstoValueTemplate.Rotation:
-                configureNumberValue(valueID, name, "Rotation", 0, 360, 1, "°");
+                configureNumberValue(valueID, name, "Rotation", 0, 360, 1, "\u00B0");
                 break;
             case WappstoValueTemplate.Magnetic:
-                configureNumberValue(valueID, name, "Magnetic Force", -40, 40, 0.001, "µT");
+                configureNumberValue(valueID, name, "Magnetic Force", -40, 40, 0.001, "\u00B5T");
                 break;
             case WappstoValueTemplate.Number:
                 configureNumberValue(valueID, name, "Number", 0, 255, 1, "");
                 break;
             case WappstoValueTemplate.Latitude:
-                configureNumberValue(valueID, name, "latitude", -90, 90, 0.000001, "°N");
+                configureNumberValue(valueID, name, "latitude", -90, 90, 0.000001, "\u00B0N");
                 break;
             case WappstoValueTemplate.Longitude:
-                configureNumberValue(valueID, name, "longitude", -180, 180, 0.000001, "°E");
+                configureNumberValue(valueID, name, "longitude", -180, 180, 0.000001, "\u00B0E");
                 break;
         }
     }
