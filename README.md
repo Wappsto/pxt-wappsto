@@ -1,4 +1,4 @@
-# Wappsto:bit [![Build Status](https://travis-ci.org/Wappsto/pxt-wappsto.svg?branch=master)](https://travis-ci.org/Wappsto/pxt-wappsto)
+# Wappsto:bit [![Build Status](https://travis-ci.com/Wappsto/pxt-wappsto.svg?branch=master)](https://travis-ci.com/Wappsto/pxt-wappsto)
 
 Micro:bit extension for Wappsto:bit by Seluxit.
 
