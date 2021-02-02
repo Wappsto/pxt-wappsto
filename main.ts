@@ -17,6 +17,9 @@ enum WappstoValueTemplate {
     Latitude,
     //% block="Longitude"
     Longitude,
+    //% block="Sound level"
+    SoundLevel,
+
 }
 
 enum WappstoTransmit {
@@ -269,7 +272,7 @@ namespace wappsto {
      */
     //% weight=80
     //% blockId="wapp_configure_name" block="setup the %name of your Micro:bit on Wappsto"
-    //% name.defl="Micro:bit"
+    //% name.defl="Name"
     //% group="Data model"
     export function configureName(name: string): void {
         connect(name);
@@ -291,25 +294,25 @@ namespace wappsto {
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
         switch(type) {
             case WappstoValueTemplate.Temperature:
-                configureNumberValue(valueID, name, "Temperature", -5, 50, 1, "\u00B0C");
+                configureNumberValue(valueID, name, "temperature", -5, 50, 1, "\u00B0C");
                 break;
             case WappstoValueTemplate.Light:
-                configureNumberValue(valueID, name, "Light", 0, 255, 1, "lx");
+                configureNumberValue(valueID, name, "light level", 0, 255, 1, "");
                 break;
             case WappstoValueTemplate.Compass:
-                configureNumberValue(valueID, name, "Compass", 0, 360, 1, "\u00B0");
+                configureNumberValue(valueID, name, "compass heading", 0, 360, 1, "\u00B0");
                 break;
             case WappstoValueTemplate.Acceleration:
-                configureNumberValue(valueID, name, "Acceleration", -1024, 1024, 1, "mg");
+                configureNumberValue(valueID, name, "accceleration", -1024, 1024, 1, "mg");
                 break;
             case WappstoValueTemplate.Rotation:
-                configureNumberValue(valueID, name, "Rotation", 0, 360, 1, "\u00B0");
+                configureNumberValue(valueID, name, "rotation", 0, 360, 1, "\u00B0");
                 break;
             case WappstoValueTemplate.Magnetic:
-                configureNumberValue(valueID, name, "Magnetic Force", -40, 40, 0.001, "\u00B5T");
+                configureNumberValue(valueID, name, "magnetic force", -40, 40, 0.001, "\u00B5T");
                 break;
             case WappstoValueTemplate.Number:
-                configureNumberValue(valueID, name, "Number", 0, 255, 1, "");
+                configureNumberValue(valueID, name, "number", 0, 255, 1, "");
                 break;
             case WappstoValueTemplate.Latitude:
                 configureNumberValue(valueID, name, "latitude", -90, 90, 0.000001, "\u00B0N");
@@ -317,6 +320,11 @@ namespace wappsto {
             case WappstoValueTemplate.Longitude:
                 configureNumberValue(valueID, name, "longitude", -180, 180, 0.000001, "\u00B0E");
                 break;
+            case WappstoValueTemplate.SoundLevel:
+                configureNumberValue(valueID, name, "sound level", 0, 255, 1, "");
+                break;
+
+SoundLevel,
         }
     }
 
@@ -335,7 +343,7 @@ namespace wappsto {
     //% block="setup Wappsto Number Value %valueID Name: %name Type: %type||Min: %min Max: %max Step: %step Unit: %unit"
     //% expandableArgumentMode="toggle"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
-    //% name.defl="MyNumber" type.defl="Number" min.defl=0 max.defl=255 step.defl=1
+    //% name.defl="MyNumber" type.defl="number" min.defl=0 max.defl=255 step.defl=1
     //% advanced=true
     //% group="Data model"
     export function configureNumberValue(valueID: number, name: string, type: string, min: number = 0, max: number = 255, step: number = 1, unit: string = null): void {
@@ -364,7 +372,7 @@ namespace wappsto {
     //% blockId="wapp_configure_string_value"
     //% block="setup Wappsto String Value %valueID with name %name as type %type"
     //% valueID.min=16 valueID.max=20 valueID.defl=16
-    //% name.defl="MyString" type.defl="String"
+    //% name.defl="MyString" type.defl="string"
     //% group="Data model"
     export function configureStringValue(valueID: number, name: string, type: string): void {
         let json: {[index: string]: string} = {};
