@@ -102,7 +102,6 @@ namespace wappsto {
                 while (bufr[i] != 255 && i < 200) {
                     if (i > 0 && bufr[i] == 0x00 && bufr[i-1] !=0x00) {
                         let data = bufr.slice(0,i).toString();
-                        serial.writeString('BitRx ('+data.length+'): ' + data+ '\n');
                         receiveHandler(data+'\n');
                         break;
                     }
@@ -159,7 +158,6 @@ namespace wappsto {
         let data: string = generateJSON(json);
         let buffer = toUTF8Buffer(data)
 
-        serial.writeString('BitTx ('+buffer.length+'): '+data+'\n')
         pins.i2cWriteBuffer(i2cDevice, buffer, false)
     }
 
@@ -323,8 +321,6 @@ namespace wappsto {
             case WappstoValueTemplate.SoundLevel:
                 configureNumberValue(valueID, name, "sound level", 0, 255, 1, "");
                 break;
-
-SoundLevel,
         }
     }
 
