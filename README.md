@@ -4,7 +4,8 @@ Micro:bit extension for Wappsto:bit by Seluxit.
 
 ## Getting started
 * Getting started video: https://www.youtube.com/watch?v=GCt_CLVkZNs
-* Product page: https://www.seluxit.com/wappstobit/
+* Getting started page: https://www.seluxit.com/wappstobit
+* Product page: https://www.seluxit.com/iot-products/slx-wappstobit/
 
 ### Example
 
