@@ -2,6 +2,12 @@
 
 Micro:bit extension for Wappsto:bit by Seluxit.
 
+## Getting started
+* Getting started video: https://www.youtube.com/watch?v=GCt_CLVkZNs
+* Product page: https://www.seluxit.com/wappstobit/
+
+### Example
+
 ```blocks
 // Configure adv settings
 wappsto.configureWifi("ssid", "passsword");
@@ -216,7 +222,6 @@ Configurere the APN to which the Wappsto:bit connects when on cellular network.
 ```sig
 wappsto.configureApn("apn")
 ```
-
 
 ## Howto build
 * npm install pxt
