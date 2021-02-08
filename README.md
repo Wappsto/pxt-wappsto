@@ -1,6 +1,14 @@
 # Wappsto:bit [![Build Status](https://travis-ci.com/Wappsto/pxt-wappsto.svg?branch=master)](https://travis-ci.com/Wappsto/pxt-wappsto)
 
-Micro:bit extension for Wappsto:bit by Seluxit.
+This is the Micro:bit extension for Wappsto:bit by Seluxit.
+Wappsto:bit is a module that lets you connect your microbit to the Internet in an easy and intuitive way.
+Drag in the blocks in makecode and data is available on wappsto.com in a dashboard right away.
+The Wappsto mobile App allows for both viewing data and controlling your micro:bit from the Internet.
+
+Wappsto:bit comes in 3 configurations:
+* Wappsto:bit Basic (Wifi connectivity)
+* Wappsto:bit NB-IoT (Wifi, 5G NB-IoT connectivity)
+* Wappsto:bit NB-IoT+ (Wifi, 5G NB-IoT connectivity and GPS location)
 
 ## Getting started
 * Getting started video: https://www.youtube.com/watch?v=GCt_CLVkZNs
@@ -223,14 +231,6 @@ Configurere the APN to which the Wappsto:bit connects when on cellular network.
 ```sig
 wappsto.configureApn("apn")
 ```
-
-## Howto build
-* npm install pxt
-* pxt target microbit
-* pxt install
-* make
-
-output is located in built-directory
 
 ## License
 
