@@ -151,6 +151,7 @@ namespace wappsto {
             connect(bitName);
         }
 
+        // await wappsto:bit sending queue (only) on events hitting wappsto
         while((json["data"] != null || json["command"] == "clean") && queueFull) {
             basic.pause(100);
         }
@@ -158,6 +159,7 @@ namespace wappsto {
         let data: string = generateJSON(json);
         let buffer = toUTF8Buffer(data)
 
+        basic.pause(50) // allow microbit i2c ring buffer to empty
         pins.i2cWriteBuffer(i2cDevice, buffer, false)
     }
 
