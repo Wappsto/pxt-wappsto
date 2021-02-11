@@ -35,7 +35,7 @@ enum WappstoTransmit {
 //% color="#1f324d" weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', 'Wappsto:bit information', 'Wappsto:bit configuration']
 namespace wappsto {
-    let version = "1.0.0"
+    let version = "1.0.3"
     let microbitConnected = false
     let bitName = "Wappsto:bit"
     let i2cDevice = 0x11
@@ -80,15 +80,10 @@ namespace wappsto {
     }
 
     function connect(name: string): void {
-        let json: {[index: string]: string} = {};
-
         if(microbitConnected) {
             if(name != bitName) {
                 bitName = name;
-                json["device"] = "1";
-                json["name"] = name;
-                json["version"] = version;
-                writeToWappstobit(json);
+                sendDeviceToWappsto(bitName);
             }
             return;
         }
@@ -113,11 +108,6 @@ namespace wappsto {
 
         basic.pause(100)
 
-        json["device"] = "1";
-        json["name"] = name;
-        json["version"] = version;
-        writeToWappstobit(json);
-
         control.inBackground(() => {
             while (true) {
                 writeCommand("info");
@@ -128,7 +118,11 @@ namespace wappsto {
 
     function writeCommand(cmd: string): void {
         let json = {"command": cmd};
-        writeToWappstobit(json);
+        if (cmd == "info") {
+            i2cWrite(json);
+        } else {
+            writeToWappstobit(json);
+        }
     }
 
     function writeValueUpdate(device: number, value: number, data: string = null, behaviour: WappstoTransmit = WappstoTransmit.ASAP): void {
@@ -147,15 +141,17 @@ namespace wappsto {
     }
 
     function writeToWappstobit(json: {[index: string]: string}): void {
-        if(!microbitConnected) {
-            connect(bitName);
-        }
+        connect(bitName);
 
         // await wappsto:bit sending queue (only) on events hitting wappsto
         while((json["data"] != null || json["command"] == "clean") && queueFull) {
             basic.pause(100);
         }
 
+        i2cWrite(json);
+    }
+
+    function i2cWrite(json: {[index: string]: string}): void {
         let data: string = generateJSON(json);
         let buffer = toUTF8Buffer(data)
 
@@ -201,6 +197,15 @@ namespace wappsto {
         return buffer;
     }
 
+    function sendDeviceToWappsto(name: string): void {
+        let json: {[index: string]: string} = {};
+
+        json["device"] = "1";
+        json["name"] = name;
+        json["version"] = version;
+        writeToWappstobit(json);
+    }
+
     function receiveHandler(data: string): void {
         let json = parseJSON(data);
         let keys = Object.keys(json);
@@ -243,6 +248,7 @@ namespace wappsto {
                         let wappstoReady: boolean = parseInt(json["ready"]) == 1
                         if(wappstoReady && !wappstoConnected) {
                             wappstoConnected = true;
+                            sendDeviceToWappsto(bitName)
                             for(let i=0; i < model.length; i++) {
                                 if(model[i]) {
                                     writeToWappstobit(model[i]);
@@ -251,7 +257,6 @@ namespace wappsto {
                         } else if(!wappstoReady) {
                             wappstoConnected = false;
                         }
-
                         break;
                     case "queue_full":
                         queueFull = parseInt(json["queue_full"]) == 1
