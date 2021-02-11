@@ -19,7 +19,6 @@ enum WappstoValueTemplate {
     Longitude,
     //% block="Sound level"
     SoundLevel,
-
 }
 
 enum WappstoTransmit {
@@ -35,14 +34,14 @@ enum WappstoTransmit {
 //% color="#1f324d" weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', 'Wappsto:bit information', 'Wappsto:bit configuration']
 namespace wappsto {
-    let version = "1.0.3"
-    let microbitConnected = false
-    let bitName = "Wappsto:bit"
-    let i2cDevice = 0x11
-    let bufferSize = 200
-    let handlers: any[] = []
-    let model: {[index: string]: string}[] = []
-    let oldValue: any[] = []
+    let version = "1.0.3";
+    let initialized = false;
+    let deviceName = "Wappsto:bit";
+    let i2cDevice = 0x11;
+    let bufferSize = 200;
+    let handlers: any[] = [];
+    let model: {[index: string]: string}[] = [];
+    let oldValue: any[] = [];
     let gpsLongitude: number = NaN;
     let gpsLatitude: number = NaN;
     let signal: number = 0;
@@ -63,7 +62,6 @@ namespace wappsto {
                 res[arr[0]] = arr[1];
             }
         }
-
         return res;
     }
 
@@ -79,17 +77,17 @@ namespace wappsto {
         return '{'+json+'}';
     }
 
-    function connect(name: string): void {
-        if(microbitConnected) {
-            if(name != bitName) {
-                bitName = name;
-                sendDeviceToWappsto(bitName);
+    function initialize(name: string): void {
+        if(initialized) {
+            if(name != deviceName) {
+                deviceName = name;
+                sendDeviceToWappsto(deviceName);
             }
             return;
         }
 
-        microbitConnected = true;
-        bitName = name;
+        initialized = true;
+        deviceName = name;
         control.inBackground(() => {
             while (true) {
                 let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
@@ -141,7 +139,7 @@ namespace wappsto {
     }
 
     function writeToWappstobit(json: {[index: string]: string}): void {
-        connect(bitName);
+        initialize(deviceName);
 
         // await wappsto:bit sending queue (only) on events hitting wappsto
         while((json["data"] != null || json["command"] == "clean") && queueFull) {
@@ -248,7 +246,7 @@ namespace wappsto {
                         let wappstoReady: boolean = parseInt(json["ready"]) == 1
                         if(wappstoReady && !wappstoConnected) {
                             wappstoConnected = true;
-                            sendDeviceToWappsto(bitName)
+                            sendDeviceToWappsto(deviceName)
                             for(let i=0; i < model.length; i++) {
                                 if(model[i]) {
                                     writeToWappstobit(model[i]);
@@ -280,7 +278,7 @@ namespace wappsto {
     //% name.defl="Name"
     //% group="Data model"
     export function configureName(name: string): void {
-        connect(name);
+        initialize(name);
     }
 
     /**
