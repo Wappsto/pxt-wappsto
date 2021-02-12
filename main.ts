@@ -34,7 +34,7 @@ enum WappstoTransmit {
 //% color="#1f324d" weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', 'Wappsto:bit information', 'Wappsto:bit configuration']
 namespace wappsto {
-    let version = "1.0.3";
+    let version = "1.0.4";
     let initialized = false;
     let deviceName = "Wappsto:bit";
     let i2cDevice = 0x11;
@@ -88,11 +88,14 @@ namespace wappsto {
 
         initialized = true;
         deviceName = name;
+        if(wappstoConnected) {
+            sendDeviceToWappsto(deviceName);
+        }
         control.inBackground(() => {
             while (true) {
-                let bufr = pins.i2cReadBuffer(i2cDevice, 200, false);
+                let bufr = pins.i2cReadBuffer(i2cDevice, bufferSize, false);
                 let i = 0;
-                while (bufr[i] != 255 && i < 200) {
+                while (bufr[i] != 255 && i < bufferSize) {
                     if (i > 0 && bufr[i] == 0x00 && bufr[i-1] !=0x00) {
                         let data = bufr.slice(0,i).toString();
                         receiveHandler(data+'\n');
@@ -104,7 +107,7 @@ namespace wappsto {
             }
         });
 
-        basic.pause(100)
+        basic.pause(100);
 
         control.inBackground(() => {
             while (true) {
@@ -123,7 +126,8 @@ namespace wappsto {
         }
     }
 
-    function writeValueUpdate(device: number, value: number, data: string = null, behaviour: WappstoTransmit = WappstoTransmit.ASAP): void {
+    function writeValueUpdate(device: number, value: number, data: string = null,
+                              behaviour: WappstoTransmit = WappstoTransmit.ASAP): void {
         if(behaviour == WappstoTransmit.OnChange) {
             if(data == oldValue[value]) {
                 return
@@ -151,10 +155,12 @@ namespace wappsto {
 
     function i2cWrite(json: {[index: string]: string}): void {
         let data: string = generateJSON(json);
-        let buffer = toUTF8Buffer(data)
+        let buffer = toUTF8Buffer(data);
 
-        basic.pause(50) // allow microbit i2c ring buffer to empty
-        pins.i2cWriteBuffer(i2cDevice, buffer, false)
+        // allow microbit i2c ring buffer to empty
+        basic.pause(50);
+
+        pins.i2cWriteBuffer(i2cDevice, buffer, false);
     }
 
     function toUTF8Buffer(str: string) {
