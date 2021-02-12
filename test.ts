@@ -37,7 +37,7 @@
     basic.showString("GPS");
     let lon = wappsto.longitude();
     let lat = wappsto.latitude();
-    if (lat == 0 && lon == 0) {
+    if (isNaN(lat) || isNaN(lon)) {
         basic.showString("NO");
     } else {
         basic.showNumber(lon);
