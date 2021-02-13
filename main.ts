@@ -312,7 +312,7 @@ namespace wappsto {
                 configureNumberValue(valueID, name, "compass heading", 0, 360, 1, "\u00B0");
                 break;
             case WappstoValueTemplate.Acceleration:
-                configureNumberValue(valueID, name, "accceleration", -1024, 1024, 1, "mg");
+                configureNumberValue(valueID, name, "acceleration", -1024, 1024, 1, "mg");
                 break;
             case WappstoValueTemplate.Rotation:
                 configureNumberValue(valueID, name, "rotation", 0, 360, 1, "\u00B0");
