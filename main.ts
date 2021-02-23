@@ -34,11 +34,11 @@ enum WappstoTransmit {
 //% color="#1f324d" weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', 'Wappsto:bit information', 'Wappsto:bit configuration']
 namespace wappsto {
-    let version = "1.0.5";
+    let version = "1.0.6";
     let initialized = false;
     let deviceName = "Wappsto:bit";
     let i2cDevice = 0x11;
-    let bufferSize = 200;
+    let bufferSize = 256;
     let handlers: any[] = [];
     let model: {[index: string]: string}[] = [];
     let oldValue: any[] = [];
@@ -98,7 +98,7 @@ namespace wappsto {
                 while (bufr[i] != 255 && i < bufferSize) {
                     if (i > 0 && bufr[i] == 0x00 && bufr[i-1] !=0x00) {
                         let data = bufr.slice(0,i).toString();
-                        receiveHandler(data+'\n');
+                        receiveHandler(data);
                         break;
                     }
                     i++;
@@ -280,7 +280,7 @@ namespace wappsto {
      * @param name The name of your Micro:bit
      */
     //% weight=80
-    //% blockId="wapp_configure_name" block="setup the %name of your Micro:bit on Wappsto"
+    //% blockId="wapp_configure_name" block="setup Micro:bit on Wappsto with name %name"
     //% name.defl="Name"
     //% group="Data model"
     export function configureName(name: string): void {

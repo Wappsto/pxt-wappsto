@@ -5,7 +5,7 @@
   "wappsto.configureValue|block": "setup Wappsto Number Value %valueID with name %name as %type",
   "wappsto.configureApn|block": "configure cellular APN: %apn",
   "wappsto.configureWifi|block": "configure Wifi network: %ssid %pass",
-  "wappsto.configureName|block": "setup the %name of your Micro:bit on Wappsto",
+  "wappsto.configureName|block": "setup Micro:bit on Wappsto with name %name",
   "wappsto.latitude|block": "GPS latitude",
   "wappsto.longitude|block": "GPS longitude",
   "wappsto.onNumberEvent|block": "on Number Value %valueID received from Wappsto",
