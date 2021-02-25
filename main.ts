@@ -275,6 +275,11 @@ namespace wappsto {
         }
     }
 
+    // fail if outside range
+    function checkRange(x: number, min: number, max: number): void {
+        if (x < min || x > max) control.fail("ValueId " + x + " not in range " + min + "-" + max)
+    }
+
     /**
      * Configure the name of your Micro:bit on Wappsto.
      * @param name The name of your Micro:bit
@@ -354,6 +359,7 @@ namespace wappsto {
     //% advanced=true
     //% group="Data model"
     export function configureNumberValue(valueID: number, name: string, type: string, min: number = 0, max: number = 255, step: number = 1, unit: string = null): void {
+        checkRange(valueID, 1, 15);
         if(unit == null) unit = "";
         let json: {[index: string]: string} = {};
         json["device"] = "1";
@@ -382,6 +388,7 @@ namespace wappsto {
     //% name.defl="MyString" type.defl="string"
     //% group="Data model"
     export function configureStringValue(valueID: number, name: string, type: string): void {
+        checkRange(valueID, 16, 20);
         let json: {[index: string]: string} = {};
         json["device"] = "1";
         json["value"] = valueID.toString();
@@ -404,6 +411,7 @@ namespace wappsto {
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
     export function sendNumberToWappsto(input: number, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
+        checkRange(valueID, 1, 15);
         writeValueUpdate(1, valueID, input.toString(), behaviour);
     }
 
@@ -419,6 +427,7 @@ namespace wappsto {
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
     export function sendStringToWappsto(input: string, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
+        checkRange(valueID, 16, 20);
         writeValueUpdate(1, valueID, input, behaviour);
     }
 
@@ -433,6 +442,7 @@ namespace wappsto {
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% group="Wappsto basic flow"
     export function onNumberEvent(valueID: number, handler: (receivedNumber: number) => void) {
+        checkRange(valueID, 1, 15);
         let json: {[index: string]: string} = {};
         json["device"] = "1";
         json["value"] = valueID.toString();
@@ -453,6 +463,7 @@ namespace wappsto {
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% group="Wappsto basic flow"
     export function onStringEvent(valueID: number, handler: (receivedString: string) => void) {
+        checkRange(valueID, 16, 20);
         let json: {[index: string]: string} = {};
         json["device"] = "1";
         json["value"] = valueID.toString();
