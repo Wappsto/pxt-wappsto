@@ -1,6 +1,10 @@
 {
   "wappsto": "MakeCode-Erweiterung für das Seluxit Wappsto:bit IoT-Erweiterungsmodul.",
   "wappsto.carrier": "Eingangsbaustein, der den Netzwerknamen zurückgibt, mit dem das Wappsto:bit verbunden ist.",
+  "wappsto.configureApn": "Konfigurieren Sie den APN, mit dem sich das Wappsto:bit verbindet, wenn es sich im Mobilfunknetz befindet.",
+  "wappsto.configureApn|param|apn": "Der APN-String",
+  "wappsto.configureName": "Stellt die Verbindung zu Wappsto über Wappsto:bit her.",
+  "wappsto.configureName|param|name": "Der Name Ihres Micro:bit",
   "wappsto.configureNumberValue": "Konfigurieren Sie den Wappsto-Zahlenwert.",
   "wappsto.configureNumberValue|param|max": "Der maximale Wert der Zahl",
   "wappsto.configureNumberValue|param|min": "Der minimale Wert der Zahl",
@@ -17,12 +21,9 @@
   "wappsto.configureValue|param|name": "Der Name des Wertes, wie er auf Wappsto zu sehen ist.",
   "wappsto.configureValue|param|type": "Der Typ des Wertes, wie er in Wappsto zu sehen ist",
   "wappsto.configureValue|param|valueID": "Die ID des zu sendenden Wertes",
-  "wappsto.configureApn": "Konfigurieren Sie den APN, mit dem sich das Wappsto:bit verbindet, wenn es sich im Mobilfunknetz befindet.",
-  "wappsto.configureApn|param|apn": "Der APN-String",
   "wappsto.configureWifi": "Konfigurieren Sie die SSID, mit der sich das Wappsto:bit verbindet, wenn es sich im Wi-Fi-Netzwerk befindet.",
   "wappsto.configureWifi|param|ssid": "Die SSID, mit der eine Verbindung hergestellt werden soll",
-  "wappsto.configureName": "Stellt die Verbindung zu Wappsto über Wappsto:bit her.",
-  "wappsto.configureName|param|name": "Der Name Ihres Micro:bit",
+  "wappsto.connected": "Bedingter Block, der ein boolesches Flag zurückgibt, um zu signalisieren, ob Wappsto:bit vollständig verbunden und bereit ist oder nicht.",
   "wappsto.latitude": "Eingabeblock, der den Breitengrad des Wappsto:bit zurückgibt. NaN wenn nicht verfügbar.",
   "wappsto.longitude": "Eingangsblock, der den Längengrad des Wappsto:bit zurückgibt. NaN, falls nicht verfügbar.",
   "wappsto.onNumberEvent": "Event-Handler für Wappsto-Zahlenereignisse.",
@@ -40,6 +41,5 @@
   "wappsto.sendStringToWappsto|param|valueID": "Die ID des zu sendenden Wertes",
   "wappsto.signalQuality": "Eingangsblock, der die Signalqualität der Netzwerkverbindung zurückgibt [0-100%].",
   "wappsto.time": "Eingangsblock, der die Wappsto:bit UTC-Zeit in Sekunden zurückgibt.",
-  "wappsto.uptime": "Eingangsblock, der die Wappsto:bit Uptime zurückgibt. D.h. die Zeit in Sekunden seit dem letzten Stromzyklus.",
-  "wappsto.connected": "Bedingter Block, der ein boolesches Flag zurückgibt, um zu signalisieren, ob Wappsto:bit vollständig verbunden und bereit ist oder nicht."
+  "wappsto.uptime": "Eingangsblock, der die Wappsto:bit Uptime zurückgibt. D.h. die Zeit in Sekunden seit dem letzten Stromzyklus."
 }

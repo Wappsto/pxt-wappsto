@@ -1,6 +1,10 @@
 {
   "wappsto": "MakeCode-udvidelse til Seluxit Wappsto:bit IoT modulet.",
   "wappsto.carrier": "Inputblok, der returnerer det netværksnavn, som Wappsto:bit er tilsluttet.",
+  "wappsto.configureApn": "Konfigurer det APN, som Wappsto:bit forbinder til på mobilnetværk.",
+  "wappsto.configureApn|param|apn": "APN-strengen, f.eks. telenor.iot",
+  "wappsto.configureName": "Opretter forbindelse til Wappsto ved hjælp af Wappsto:bit.",
+  "wappsto.configureName|param|name": "Navnet på din Micro:bit",
   "wappsto.configureNumberValue": "Konfigurer Wappsto nummer værdi.",
   "wappsto.configureNumberValue|param|max": "Den maksimale værdi af tallet",
   "wappsto.configureNumberValue|param|min": "Minimumsværdien af tallet",
@@ -17,12 +21,9 @@
   "wappsto.configureValue|param|name": "Navnet på værdien set på Wappsto",
   "wappsto.configureValue|param|type": "Typen af værdien set på Wappsto",
   "wappsto.configureValue|param|valueID": "Id for den værdi, der skal sendes",
-  "wappsto.configureApn": "Konfigurer det APN, som Wappsto:bit forbinder til på mobilnetværk.",
-  "wappsto.configureApn|param|apn": "APN-strengen, f.eks. telenor.iot",
   "wappsto.configureWifi": "Konfigurer det SSID, som Wappsto:bit forbinder på Wi-Fi-netværk.",
   "wappsto.configureWifi|param|ssid": "SSID'et, der skal oprettes forbindelse til",
-  "wappsto.configureName": "Opretter forbindelse til Wappsto ved hjælp af Wappsto:bit.",
-  "wappsto.configureName|param|name": "Navnet på din Micro:bit",
+  "wappsto.connected": "Betingelsesblok, der returnerer et boolesk flag for at signalere, om Wappsto:bit er fuldt tilsluttet og klar.",
   "wappsto.latitude": "Inputblok, der returnerer Wappsto:bit GPS-breddegrad. NaN, hvis ikke tilgængelig.",
   "wappsto.longitude": "Inputblok, der returnerer Wappsto:bit GPS-længdegrad. NaN, hvis ikke tilgængelig.",
   "wappsto.onNumberEvent": "Begivenhedsbehandler til Wappsto talbegivenheder.",
@@ -40,6 +41,5 @@
   "wappsto.sendStringToWappsto|param|valueID": "Id på værdi, der skal sendes",
   "wappsto.signalQuality": "Inputblok, der returnerer netværkslinkets signalkvalitet [0-100%].",
   "wappsto.time": "Inputblok, der returnerer Wappsto:bit UTC-tid i sekunder.",
-  "wappsto.uptime": "Inputblok, der returnerer Wappsto:bit oppetid. Dvs. tid i sekunder siden den blev tændt.",
-  "wappsto.connected": "Betingelsesblok, der returnerer et boolesk flag for at signalere, om Wappsto:bit er fuldt tilsluttet og klar."
+  "wappsto.uptime": "Inputblok, der returnerer Wappsto:bit oppetid. Dvs. tid i sekunder siden den blev tændt."
 }
