@@ -10,7 +10,7 @@
   "WappstoValueTemplate.Number|block": "Nummer",
   "WappstoValueTemplate.Rotation|block": "Rotation",
   "WappstoValueTemplate.SoundLevel|block": "Sound level",
-  "WappstoValueTemplate.Temperature|block": "Temperatur",  "wappsto.carrier|block": "Netzwerk Name",
+  "WappstoValueTemplate.Temperature|block": "Temperatur",
   "wappsto.carrier|block": "Network Name",
   "wappsto.configureApn|block": "APN für Mobilfunknetz konfigurieren: %apn",
   "wappsto.configureName|block": "%name mit Wappsto by Seluxit verbinden",
