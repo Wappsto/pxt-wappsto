@@ -443,7 +443,7 @@ namespace wappsto {
      * @param step The increment size of the number
      * @param unit The unit as seen on Wappsto
      */
-    //% weight=90
+    //% weight=95
     //% blockId="wapp_configure_number_value"
     //% block="setup Wappsto Number Value %valueID Name: %name Type: %type||Min: %min Max: %max Step: %step Unit: %unit"
     //% expandableArgumentMode="toggle"
@@ -474,7 +474,7 @@ namespace wappsto {
      * @param name The name of the string value as seen on Wappsto
      * @param type The type of the string value as seen on Wappsto (optional)
      */
-    //% weight=90
+    //% weight=94
     //% blockId="wapp_configure_string_value"
     //% block="setup Wappsto String Value %valueID with name %name as type %type"
     //% valueID.min=16 valueID.max=20 valueID.defl=16
