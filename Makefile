@@ -12,6 +12,7 @@ test:
 clean:
 	pxt clean
 
+install: update
 update:
 	npm install pxt
 	pxt target microbit
