@@ -8,3 +8,4 @@ pxt_modules
 *.tgz
 .header.json
 *~
+*.sublime-workspace
