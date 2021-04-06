@@ -34,11 +34,11 @@ enum WappstoTransmit {
 //% color="#1f324d" weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', 'Wappsto:bit information', 'Wappsto:bit configuration']
 namespace wappsto {
-    let version = "1.0.7";
-    let initialized = false;
-    let deviceName = "Wappsto:bit";
-    let i2cDevice = 0x11;
-    let bufferSize = 256;
+    let version: string = "1.0.7";
+    let initialized: boolean = false;
+    let deviceName: string = "Wappsto:bit";
+    let i2cDevice: number = 0x11;
+    let bufferSize: number = 256;
     let handlers: any[] = [];
     let model: { [index: string]: string }[] = [];
     let oldValue: any[] = [];
@@ -81,7 +81,7 @@ namespace wappsto {
      */
     function generateJSON(data: { [index: string]: string }): string {
         let json: string = "";
-        let keys = Object.keys(data);
+        let keys: string[] = Object.keys(data);
         for (let i = 0; i < keys.length; i++) {
             if (json != "") {
                 json += ",";
@@ -111,11 +111,11 @@ namespace wappsto {
 
         control.inBackground(() => {
             while (true) {
-                let bufr = pins.i2cReadBuffer(i2cDevice, bufferSize, false);
-                let i = 0;
+                let bufr: Buffer = pins.i2cReadBuffer(i2cDevice, bufferSize, false);
+                let i: number = 0;
                 while (bufr[i] != 255 && i < bufferSize) {
                     if (i > 0 && bufr[i] == 0x00 && bufr[i - 1] != 0x00) {
-                        let data = bufr.slice(0, i).toString();
+                        let data: string = bufr.slice(0, i).toString();
                         receiveHandler(data);
                         break;
                     }
@@ -140,7 +140,7 @@ namespace wappsto {
      */
     function writeCommand(cmd: string): void {
         let json = createJSON();
-        json["command"] = cmd
+        json["command"] = cmd;
         if (cmd == "info") {
             i2cWrite(json);
         } else {
@@ -155,9 +155,9 @@ namespace wappsto {
         behaviour: WappstoTransmit = WappstoTransmit.ASAP): void {
         if (behaviour == WappstoTransmit.OnChange) {
             if (data == oldValue[value]) {
-                return
+                return;
             }
-            oldValue[value] = data
+            oldValue[value] = data;
         }
 
         let json = createJSON();
@@ -193,7 +193,7 @@ namespace wappsto {
      */
     function i2cWrite(json: { [index: string]: string }): void {
         let data: string = generateJSON(json);
-        let buffer = toUTF8Buffer(data);
+        let buffer: Buffer = toUTF8Buffer(data);
 
         // allow microbit i2c ring buffer to empty
         basic.pause(50);
@@ -205,9 +205,10 @@ namespace wappsto {
      *Convert string into UTF8 buffer
      */
     function toUTF8Buffer(str: string): Buffer {
-        let utf8 = [];
-        for (let i = 0; i < str.length; i++) {
-            let charcode = str.charCodeAt(i);
+        let utf8: number[] = [];
+        let i: number;
+        for (i = 0; i < str.length; i++) {
+            let charcode: number = str.charCodeAt(i);
             if (charcode < 0x80) {
                 utf8.push(charcode);
             }
@@ -235,10 +236,10 @@ namespace wappsto {
             }
         }
 
-        let buffer = pins.createBuffer(utf8.length + 1);
-        buffer.setNumber(NumberFormat.UInt8LE, utf8.length, 0x00)
-        for (let i = 0; i < utf8.length; i++) {
-            buffer.setNumber(NumberFormat.UInt8LE, i, utf8[i])
+        let buffer: Buffer = pins.createBuffer(utf8.length + 1);
+        buffer.setNumber(NumberFormat.UInt8LE, utf8.length, 0x00);
+        for (i = 0; i < utf8.length; i++) {
+            buffer.setNumber(NumberFormat.UInt8LE, i, utf8[i]);
         }
 
         return buffer;
@@ -294,7 +295,7 @@ namespace wappsto {
         // Run in thread to make sure that we do not block receive thread
         control.inBackground(() => {
             sendDeviceToWappsto(deviceName)
-            for (let i = 0; i < model.length; i++) {
+            for (let i: number = 0; i < model.length; i++) {
                 if (model[i]) {
                     writeToWappstobit(model[i]);
                 }
@@ -307,9 +308,9 @@ namespace wappsto {
      */
     function receiveHandler(data: string): void {
         let json = parseJSON(data);
-        let keys = Object.keys(json);
-        let tmp = 0;
-        let val = json["data"];
+        let keys: string[] = Object.keys(json);
+        let tmp: number = 0;
+        let val: string = json["data"];
 
         if (val != null) {
             if (json["device"] != "1") {
@@ -320,7 +321,7 @@ namespace wappsto {
             return;
         }
 
-        for (let i = 0; i < keys.length; i++) {
+        for (let i: number = 0; i < keys.length; i++) {
             val = json[keys[i]];
             switch (keys[i]) {
                 case "lon":
@@ -345,7 +346,7 @@ namespace wappsto {
                     connectionInfo = val;
                     break;
                 case "queue_full":
-                    queueFull = parseInt(val) == 1
+                    queueFull = parseInt(val) == 1;
                     break;
                 case "utc_time":
                     wappstoTime = parseInt(val);
@@ -354,7 +355,7 @@ namespace wappsto {
                     wappstoUptime = parseInt(val);
                     break;
                 case "ready":
-                    let wappstoReady: boolean = parseInt(val) == 1
+                    let wappstoReady: boolean = parseInt(val) == 1;
                     if (wappstoReady && !wappstoConnected) {
                         wappstoConnected = true;
                         sendConfiguration();
@@ -370,7 +371,9 @@ namespace wappsto {
      * Fail if the number is outside the range
      */
     function checkRange(x: number, min: number, max: number): void {
-        if (x < min || x > max) control.fail("ValueId " + x + " not in range " + min + "-" + max)
+        if (x < min || x > max) {
+            control.fail("ValueId " + x + " not in range " + min + "-" + max);
+        }
     }
 
     /**
@@ -453,8 +456,9 @@ namespace wappsto {
     //% group="Data model"
     export function configureNumberValue(valueID: number, name: string, type: string, min: number = 0, max: number = 255, step: number = 1, unit: string = null): void {
         checkRange(valueID, 1, 15);
-        if (unit == null) unit = "";
-
+        if (unit == null) {
+            unit = "";
+        }
         let json = createJSON();
         json["device"] = "1";
         json["value"] = valueID.toString();
