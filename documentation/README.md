@@ -1,13 +1,13 @@
 # Wappsto:bit protocol
 
-This is a description on the protocol for exchaning data between Wappsto:bit and micro:bit. This documentation covers protocol version 1.0.x.
+This is a description on the protocol for exchaning data between Wappsto:bit and micro:bit. This documentation covers protocol used in PXT version 1.0.x.
 This documentation is interesting for you if you are looking to **a)** replace the micro:bit with something else and still talk to the Wappsto:bit, **b)** talk to the micro:bit with this code, but write you own interpreter, or **c)** out of curiosity. If you intend to use the Wappsto:bit as it is, you do not need to know this information.
 
 Communication is over I2C where the micro:bit is master, and the Wappsto:bit slave. The I2C address of the Wappsto:bit is `0x11`. There is a maximum length of each message on 256 bytes.
 As the micro:bit is master it will ask for data every 100ms, to ensure it will not miss any event.
 Every 5 seconds it will ask for extended information - see [Request info](#request-info).
 
-The communication between Wappsto:bit and micro:bit is done using JSON.
+The communication between Wappsto:bit and micro:bit is done using JSON, encoded in UTF-8.
 
 ## Send and receive data
 
@@ -98,7 +98,7 @@ And the Wappsto:bit can send data containing these value pairs:
 * `"utc_time"`: Current UTC time.
 * `"ready"`: A flag ("0" or "1") informing if the Wappsto:bit is connected to Wappsto.
 * `"queue_full"`: A flash ("0" or "1") telling the micro:bit if it possible to send data to the Wappsto:bit.
-* `"version"`: The version of the protocol as supported by the Wappsto:bit. Currently 0.0.1.
+* `"version"`: The version of the protocol the Wappsto:bit supports, currently 0.0.1. Note that this version is not related to the PXT version nor the firmware version of the Wappsto:bit.
 
 An example on this:
 ```
