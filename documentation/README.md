@@ -4,7 +4,8 @@ This is a description on the protocol for exchaning data between Wappsto:bit and
 This documentation is interesting for you if you are looking to 
 1. replace the micro:bit with something else and still talk to the Wappsto:bit, 
 2. talk to the micro:bit with this code, but write you own interpreter, or 
-3. out of curiosity. 
+3. out of curiosity.
+
 If you intend to use the Wappsto:bit as it is, you do not need to know this information.
 
 Communication is over I2C where the micro:bit is master, and the Wappsto:bit slave. The I2C address of the Wappsto:bit is `0x11`. There is a maximum length of each message on 256 bytes.
