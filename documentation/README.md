@@ -1,7 +1,11 @@
 # Wappsto:bit protocol
 
 This is a description on the protocol for exchaning data between Wappsto:bit and micro:bit. This documentation covers protocol used in PXT version 1.0.x.
-This documentation is interesting for you if you are looking to **a)** replace the micro:bit with something else and still talk to the Wappsto:bit, **b)** talk to the micro:bit with this code, but write you own interpreter, or **c)** out of curiosity. If you intend to use the Wappsto:bit as it is, you do not need to know this information.
+This documentation is interesting for you if you are looking to 
+1. replace the micro:bit with something else and still talk to the Wappsto:bit, 
+2. talk to the micro:bit with this code, but write you own interpreter, or 
+3. out of curiosity. 
+If you intend to use the Wappsto:bit as it is, you do not need to know this information.
 
 Communication is over I2C where the micro:bit is master, and the Wappsto:bit slave. The I2C address of the Wappsto:bit is `0x11`. There is a maximum length of each message on 256 bytes.
 As the micro:bit is master it will ask for data every 100ms, to ensure it will not miss any event.
