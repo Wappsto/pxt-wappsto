@@ -97,12 +97,12 @@ And the Wappsto:bit can send data containing these value pairs:
 * `"lon"`: If the Wappsto:bit HW has GPS, this is the longitude - if not the value will be 0.
 * `"lat"`: If the Wappsto:bit HW has GPS, this is the latitude - if not the value will be 0
 * `"signal"`: Signal strength in %, this will either be for WiFi or NB-IoT depending on connection.
-* `"status"`: A string to describe what status the Wappsto:bit is in.
-* `"network"`: Description on the network connection, for WiFi you can see which SSID you are connected to.
+* `"status"`: A string to describe what status of the Wappsto:bit.
+* `"network"`: Description on the network connection, for WiFi you can see which SSID the Wappsto:bit is connected to.
 * `"uptime"`: Is the number of seconds the Wappsto:bit has been running since last boot.
 * `"utc_time"`: Current UTC time.
 * `"ready"`: A flag ("0" or "1") informing if the Wappsto:bit is connected to Wappsto.
-* `"queue_full"`: A flash ("0" or "1") telling the micro:bit if it possible to send data to the Wappsto:bit.
+* `"queue_full"`: A flag ("0" or "1") telling the micro:bit if it possible to send data to the Wappsto:bit.
 * `"version"`: The version of the protocol the Wappsto:bit supports, currently 0.0.1. Note that this version is not related to the PXT version nor the firmware version of the Wappsto:bit.
 
 An example on this:
@@ -125,7 +125,7 @@ An example:
 
 ### Set APN name (NB-IoT only)
 
-If you have a Wappsto:bit that supports NB-IoT, but not a SIM card that is supported by default (Telenor), you can set a different APN mayching your SIM card via. the micro:bit.
+If you have a Wappsto:bit that supports NB-IoT, but not a SIM card that is supported by default (Telenor), you can set a different APN maching your SIM card via. the micro:bit.
 
 ```
 {"command":"config_apn", "apn":"NAME"}
@@ -162,7 +162,7 @@ If the connection to Wappsto should change, or you want to follow what happends 
 
 #### Queue full
 
-If the micro:bit is sending values faster than the Wappsto:bit can send them to Wappsto, the Wappsto:bit will send a message `"queue_full"` indicating if micro:bit should stop sending data, or it can resume. Example on the queu being full:
+If the micro:bit is sending values faster than the Wappsto:bit can send them to Wappsto, the Wappsto:bit will send a message `"queue_full"` indicating if micro:bit should stop sending data, or it can resume. Example on the queue being full:
 ```
 {"queue_full":"1"}
 ```
