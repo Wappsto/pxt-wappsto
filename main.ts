@@ -39,6 +39,7 @@ namespace wappsto {
     let deviceName: string = "Wappsto:bit";
     let i2cDevice: number = 0x11;
     let bufferSize: number = 256;
+    let i2cChunkSize: number = 12;
     let handlers: any[] = [];
     let model: { [index: string]: string }[] = [];
     let oldValue: any[] = [];
@@ -65,8 +66,10 @@ namespace wappsto {
      */
     function parseJSON(data: string): { [index: string]: string } {
         let res = createJSON();
-        if (data.indexOf("{") == 0 && data.indexOf("}") != -1) {
-            data = data.replace("{", "").replace("}", "").replaceAll("\"", "")
+        let start = data.indexOf("{");
+        let end = data.indexOf("}");
+        if(start != -1 && end != -1) {
+            data = data.slice(start, end).replace("{","").replace("}","").replaceAll("\"","")
             let aData = data.split(",");
             for (let i = 0; i < aData.length; i++) {
                 let arr: Array<string> = aData[i].split(":");
@@ -110,18 +113,43 @@ namespace wappsto {
         }
 
         control.inBackground(() => {
+            let read_buffer = pins.createBuffer(bufferSize);
+            read_buffer.fill(0xff);
+            let index = 0;
             while (true) {
-                let bufr: Buffer = pins.i2cReadBuffer(i2cDevice, bufferSize, false);
-                let i: number = 0;
-                while (bufr[i] != 255 && i < bufferSize) {
-                    if (i > 0 && bufr[i] == 0x00 && bufr[i - 1] != 0x00) {
-                        let data: string = bufr.slice(0, i).toString();
-                        receiveHandler(data);
+                let bufr: Buffer = pins.i2cReadBuffer(i2cDevice, i2cChunkSize, false);
+                if (bufr[0] == 0xff || bufr[0] != 0x00 && bufr[1] == 0xff) {
+                    //skip empty buffer and 1 byte garbage
+                    basic.pause(100);
+                    continue;
+                }
+
+                for (let i = 0; i < i2cChunkSize; i++) {
+                    if (bufr[i] == 0xff) {
                         break;
                     }
-                    i++;
+                    read_buffer.setNumber(NumberFormat.UInt8LE, index, bufr[i]);
+                    index++;
                 }
-                basic.pause(100);
+
+                while ( read_buffer[0] != 0xff ) {
+                    let end = read_buffer.toString().indexOf("\0")
+                    if (end > 0) {
+                        let data = read_buffer.slice(0, end).toString();
+                        receiveHandler(data);
+
+                        // shift buffer and fill with 0xff
+                        end++;
+                        read_buffer.shift(end);
+                        index -= end;
+                        for (let i = bufferSize - end; i < bufferSize; i++) {
+                             read_buffer.setNumber(NumberFormat.UInt8LE, i, 0xff);
+                        }
+                    } else {
+                        //handling data without terminiation
+                        break;
+                    }
+                }
             }
         });
 
