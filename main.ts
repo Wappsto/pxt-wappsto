@@ -113,12 +113,12 @@ namespace wappsto {
         }
 
         control.inBackground(() => {
-            let read_buffer = pins.createBuffer(bufferSize);
-            read_buffer.fill(0xff);
+            let readBuffer = pins.createBuffer(bufferSize);
+            readBuffer.fill(0xff);
             let index = 0;
             while (true) {
                 let bufr: Buffer = pins.i2cReadBuffer(i2cDevice, i2cChunkSize, false);
-                if (bufr[0] == 0xff || bufr[0] != 0x00 && bufr[1] == 0xff) {
+                if (bufr[0] == 0xff || bufr[0] != 0x00 && bufr[1] == 0xff || bufr[0] == 0x00 && bufr[1] == 0x00) {
                     //skip empty buffer and 1 byte garbage
                     basic.pause(100);
                     continue;
@@ -126,28 +126,36 @@ namespace wappsto {
 
                 for (let i = 0; i < i2cChunkSize; i++) {
                     if (bufr[i] == 0xff) {
+                        //break on no data
                         break;
                     }
-                    read_buffer.setNumber(NumberFormat.UInt8LE, index, bufr[i]);
+/*		    if(bufr[i] == 0 && index > 0 && readBuffer[index - 1] == 0) {
+                        //break and rewind index on uninitialized i2c slave
+                        index--;
+			break;
+		    }
+*/
+                    readBuffer.setNumber(NumberFormat.UInt8LE, index, bufr[i]);
                     index++;
                 }
 
-                while ( read_buffer[0] != 0xff ) {
-                    let end = read_buffer.toString().indexOf("\0")
-                    if (end > 0) {
-                        let data = read_buffer.slice(0, end).toString();
-                        receiveHandler(data);
-
-                        // shift buffer and fill with 0xff
-                        end++;
-                        read_buffer.shift(end);
-                        index -= end;
-                        for (let i = bufferSize - end; i < bufferSize; i++) {
-                             read_buffer.setNumber(NumberFormat.UInt8LE, i, 0xff);
-                        }
-                    } else {
-                        //handling data without terminiation
+                while ( readBuffer[0] != 0xff ) {
+                    let len = readBuffer.toString().indexOf("\0")
+                    if (len < 0) {
+                        //get more data
                         break;
+                    }
+                    if (len > 0) {
+                        let data = readBuffer.slice(0, len).toString();
+                        serial.writeString('BitRx ('+data.length+'): ' + data + '\n');
+                        receiveHandler(data);
+                    }
+
+                    // shift buffer and fill with 0xff
+                    readBuffer.shift(++len);
+                    index -= len;
+                    for (let i = bufferSize - len; i < bufferSize; i++) {
+                        readBuffer.setNumber(NumberFormat.UInt8LE, i, 0xff);
                     }
                 }
             }
@@ -226,6 +234,7 @@ namespace wappsto {
         // allow microbit i2c ring buffer to empty
         basic.pause(50);
 
+        serial.writeString('BitTx ('+buffer.length+'): '+data+'\n')
         pins.i2cWriteBuffer(i2cDevice, buffer, false);
     }
 
