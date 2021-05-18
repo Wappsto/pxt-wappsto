@@ -118,7 +118,7 @@ namespace wappsto {
             let index = 0;
             while (true) {
                 let bufr: Buffer = pins.i2cReadBuffer(i2cDevice, i2cChunkSize, false);
-                if (bufr[0] == 0xff || bufr[0] != 0x00 && bufr[1] == 0xff || bufr[0] == 0x00 && bufr[1] == 0x00) {
+                if (bufr[0] == 0xff || (bufr[0] != 0x00 && bufr[1] == 0xff) || (bufr[0] == 0x00 && bufr[1] == 0x00)) {
                     //skip empty buffer and 1 byte garbage
                     basic.pause(100);
                     continue;
@@ -126,15 +126,9 @@ namespace wappsto {
 
                 for (let i = 0; i < i2cChunkSize; i++) {
                     if (bufr[i] == 0xff) {
-                        //break on no data
+                        //break on no more data
                         break;
                     }
-/*		    if(bufr[i] == 0 && index > 0 && readBuffer[index - 1] == 0) {
-                        //break and rewind index on uninitialized i2c slave
-                        index--;
-			break;
-		    }
-*/
                     readBuffer.setNumber(NumberFormat.UInt8LE, index, bufr[i]);
                     index++;
                 }
@@ -147,7 +141,6 @@ namespace wappsto {
                     }
                     if (len > 0) {
                         let data = readBuffer.slice(0, len).toString();
-                        serial.writeString('BitRx ('+data.length+'): ' + data + '\n');
                         receiveHandler(data);
                     }
 
@@ -234,7 +227,6 @@ namespace wappsto {
         // allow microbit i2c ring buffer to empty
         basic.pause(50);
 
-        serial.writeString('BitTx ('+buffer.length+'): '+data+'\n')
         pins.i2cWriteBuffer(i2cDevice, buffer, false);
     }
 
