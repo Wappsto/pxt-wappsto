@@ -151,6 +151,9 @@ namespace wappsto {
                         readBuffer.setNumber(NumberFormat.UInt8LE, i, 0xff);
                     }
                 }
+
+                //force scheduler to do context switch
+                basic.pause(0);
             }
         });
 
