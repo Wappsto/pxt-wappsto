@@ -150,6 +150,9 @@ namespace wappsto {
                     for (let i = bufferSize - len; i < bufferSize; i++) {
                         readBuffer.setNumber(NumberFormat.UInt8LE, i, 0xff);
                     }
+
+                    //force scheduler to do context switch
+                    basic.pause(0);
                 }
 
                 //force scheduler to do context switch
