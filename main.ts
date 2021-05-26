@@ -131,6 +131,12 @@ namespace wappsto {
                     }
                     readBuffer.setNumber(NumberFormat.UInt8LE, index, bufr[i]);
                     index++;
+
+                    if (index >= bufferSize) {
+                        index = 0;
+                        readBuffer.fill(0xff);
+                        break;
+                    }
                 }
 
                 while ( readBuffer[0] != 0xff ) {
