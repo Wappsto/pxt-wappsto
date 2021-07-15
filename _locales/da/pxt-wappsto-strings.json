@@ -26,6 +26,8 @@
   "wappsto.sendCleanToWappsto|block": "fjern gamle værdier i Wappsto",
   "wappsto.sendNumberToWappsto|block": "send nummer %input til Wappsto for Nummer Værdi %valueID||%behaviour",
   "wappsto.sendStringToWappsto|block": "send strengen %input til Wappsto Streng Værdi %valueID||%behaviour",
+  "wappsto.commandSleep|block": "sæt Wappsto:bit i dvale tilstand",
+  "wappsto.commandWake|block": "væk Wappsto:bit fra dvale tilstand",
   "wappsto.signalQuality|block": "Signalstyrke",
   "wappsto.time|block": "UTC-tid (UNIX tidsstempel)",
   "wappsto.uptime|block": "Wappsto:bit oppetid",

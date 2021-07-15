@@ -41,5 +41,7 @@
   "wappsto.sendStringToWappsto|param|valueID": "The id of the value to send",
   "wappsto.signalQuality": "Input block returning the signal quality of the network link [0-100%].",
   "wappsto.time": "Input block returning the Wappsto:bit UTC time in seconds.",
-  "wappsto.uptime": "Input block returning the Wappsto:bit uptime. I.e. time in seconds since last power cycle."
+  "wappsto.uptime": "Input block returning the Wappsto:bit uptime. I.e. time in seconds since last power cycle.",
+  "wappsto.commandSleep": "Put the Wappsto:bit in sleep mode",
+  "wappsto.commandWake": "Wake the Wappsto:bit from sleep mode"
 }

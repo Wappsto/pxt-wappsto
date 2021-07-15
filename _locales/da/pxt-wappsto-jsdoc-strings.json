@@ -41,5 +41,7 @@
   "wappsto.sendStringToWappsto|param|valueID": "Id på værdi, der skal sendes",
   "wappsto.signalQuality": "Inputblok, der returnerer netværkslinkets signalkvalitet [0-100%].",
   "wappsto.time": "Inputblok, der returnerer Wappsto:bit UTC-tid i sekunder.",
-  "wappsto.uptime": "Inputblok, der returnerer Wappsto:bit oppetid. Dvs. tid i sekunder siden den blev tændt."
+  "wappsto.uptime": "Inputblok, der returnerer Wappsto:bit oppetid. Dvs. tid i sekunder siden den blev tændt.",
+  "wappsto.commandSleep": "Sæt Wappsto:bit i dvale tilstand",
+  "wappsto.commandWake": "Væk Wappsto:bit fra dvale tilstand"
 }

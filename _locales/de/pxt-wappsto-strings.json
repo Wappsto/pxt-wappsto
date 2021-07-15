@@ -26,6 +26,8 @@
   "wappsto.sendCleanToWappsto|block": "Anfrage zum Löschen von Wappsto senden",
   "wappsto.sendNumberToWappsto|block": "Zahl senden %input an Wappsto Zahlenwert %valueID||%behaviour",
   "wappsto.sendStringToWappsto|block": "String senden %input an Wappsto String-Wert %valueID||%behaviour",
+  "wappsto.commandSleep|block": "Wappsto:bit in Schlafzustand setzen",
+  "wappsto.commandWake|block": "Wappsto:bit wecken",
   "wappsto.signalQuality|block": "Signalqualität",
   "wappsto.time|block": "UTC-Zeit (UNIX-Zeitstempel)",
   "wappsto.uptime|block": "Wappsto:bit Betriebszeit",

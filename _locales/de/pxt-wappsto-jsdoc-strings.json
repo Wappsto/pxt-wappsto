@@ -41,5 +41,7 @@
   "wappsto.sendStringToWappsto|param|valueID": "Die ID des zu sendenden Wertes",
   "wappsto.signalQuality": "Eingangsblock, der die Signalqualität der Netzwerkverbindung zurückgibt [0-100%].",
   "wappsto.time": "Eingangsblock, der die Wappsto:bit UTC-Zeit in Sekunden zurückgibt.",
-  "wappsto.uptime": "Eingangsblock, der die Wappsto:bit Uptime zurückgibt. D.h. die Zeit in Sekunden seit dem letzten Stromzyklus."
+  "wappsto.uptime": "Eingangsblock, der die Wappsto:bit Uptime zurückgibt. D.h. die Zeit in Sekunden seit dem letzten Stromzyklus.",
+  "wappsto.commandSleep": "Wappsto:bit in Schlafzustand setzen",
+  "wappsto.commandWake": "Wappsto:bit wecken"
 }

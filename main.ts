@@ -646,6 +646,32 @@ namespace wappsto {
     }
 
     /**
+     * Send a sleep command.
+     */
+    //% weight=40
+    //% advanced=true
+    //% blockId="wapp_sleep" block="start sleep mode"
+    //% group="Wappsto:bit configuration"
+    export function commandSleep(): void {
+        pins.digitalWritePin(DigitalPin.P8, 0)
+        writeCommand("sleep");
+    }
+
+    /**
+     * Send a wake signal.
+     */
+    //% weight=40
+    //% advanced=true
+    //% blockId="wapp_wake" block="wakeup from sleep"
+    //% group="Wappsto:bit configuration"
+    export function commandWake(): void {
+        pins.digitalWritePin(DigitalPin.P8, 1)
+        basic.pause(100)
+        pins.digitalWritePin(DigitalPin.P8, 0)
+    }
+
+
+    /**
      * Send a clean command to Wappsto.
      */
     //% weight=40
