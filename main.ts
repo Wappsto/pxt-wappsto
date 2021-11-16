@@ -34,7 +34,7 @@ enum WappstoTransmit {
 //% color="#1f324d" weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', 'Wappsto:bit information', 'Wappsto:bit configuration']
 namespace wappsto {
-    let version: string = "1.0.7";
+    let version: string = "1.0.8";
     let initialized: boolean = false;
     let deviceName: string = "Wappsto:bit";
     let i2cDevice: number = 0x11;
@@ -544,7 +544,7 @@ namespace wappsto {
      * @param behaviour Default sending behaviour.
      */
     //% weight=65
-    //% blockId="wapp_number_value" block="send number %input to Wappsto Number Value %valueID||%behaviour"
+    //% blockId="wapp_number_value" block="send number %input to Wappsto Number Value %valueID %behaviour"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
@@ -560,7 +560,7 @@ namespace wappsto {
      * @param behaviour Default sending behaviour.
      */
     //% weight=60
-    //% blockId="wapp_string_value" block="send string %input to Wappsto String Value %valueID||%behaviour"
+    //% blockId="wapp_string_value" block="send string %input to Wappsto String Value %valueID %behaviour"
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
