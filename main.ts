@@ -34,7 +34,7 @@ enum WappstoTransmit {
 //% color="#1f324d" weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', 'Wappsto:bit information', 'Wappsto:bit configuration']
 namespace wappsto {
-    let version: string = "1.0.8";
+    let version: string = "1.0.9";
     let initialized: boolean = false;
     let deviceName: string = "Wappsto:bit";
     let i2cDevice: number = 0x11;
