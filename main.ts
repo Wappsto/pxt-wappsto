@@ -463,7 +463,7 @@ namespace wappsto {
                 configureNumberValue(valueID, name, "magnetic force", -40, 40, 0.001, "\u00B5T");
                 break;
             case WappstoValueTemplate.Number:
-                configureNumberValue(valueID, name, "number", 0, 255, 1, "");
+                configureNumberValue(valueID, name, "number", -1e12, 1e12, 1, "");
                 break;
             case WappstoValueTemplate.Latitude:
                 configureNumberValue(valueID, name, "latitude", -90, 90, 0.000001, "\u00B0N");
@@ -489,7 +489,7 @@ namespace wappsto {
      */
     //% weight=95
     //% blockId="wapp_configure_number_value"
-    //% block="setup Wappsto Number Value %valueID Name: %name Type: %type||Min: %min Max: %max Step: %step Unit: %unit"
+    //% block="setup Wappsto Number Value %valueID Name: %name Type: %type Min: %min Max: %max Step: %step Unit: %unit"
     //% expandableArgumentMode="toggle"
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% name.defl="MyNumber" type.defl="number" min.defl=0 max.defl=255 step.defl=1
