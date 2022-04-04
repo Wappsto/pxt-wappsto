@@ -12,8 +12,8 @@ Wappsto:bit comes in 3 configurations:
 
 ## Getting started
 * Getting started video: https://www.youtube.com/watch?v=GCt_CLVkZNs
-* Getting started page: https://www.seluxit.com/wappstobit
-* Product page: https://www.seluxit.com/iot-products/slx-wappstobit/
+* Getting started page: https://bit.wappsto.com
+* Where to buy: https://bit.wappsto.com/buy-it-here
 
 ### Example
 
