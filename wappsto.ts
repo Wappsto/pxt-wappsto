@@ -653,7 +653,7 @@ namespace wappsto {
     //% blockId="wapp_sleep" block="start sleep mode"
     //% group="Wappsto:bit configuration"
     export function commandSleep(): void {
-        pins.digitalWritePin(DigitalPin.P8, 0)
+        pins.digitalWritePin(wakePin, 0)
         writeCommand("sleep");
     }
 
@@ -665,9 +665,9 @@ namespace wappsto {
     //% blockId="wapp_wake" block="wakeup from sleep"
     //% group="Wappsto:bit configuration"
     export function commandWake(): void {
-        pins.digitalWritePin(DigitalPin.P8, 1)
+        pins.digitalWritePin(wakePin, 1)
         basic.pause(100)
-        pins.digitalWritePin(DigitalPin.P8, 0)
+        pins.digitalWritePin(wakePin, 0)
     }
 
 

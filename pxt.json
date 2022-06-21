@@ -1,14 +1,15 @@
 {
     "name": "pxt-wappsto",
-    "version": "1.0.9",
+    "version": "1.1.0",
     "description": "MakeCode extension for Wappsto:bit IoT module",
     "dependencies": {
-        "core": "*",
-        "microphone": "*"
+        "core": "*"
     },
     "files": [
         "README.md",
-        "main.ts",
+        "wappsto.ts",
+        "microbit.ts",
+        "calliope.ts",
         "_locales/en/pxt-wappsto-jsdoc-strings.json",
         "_locales/en/pxt-wappsto-strings.json",
         "_locales/da/pxt-wappsto-jsdoc-strings.json",
@@ -17,10 +18,15 @@
         "_locales/de/pxt-wappsto-strings.json"
     ],
     "testFiles": [
-        "test.ts"
+        "wappstotest.ts"
     ],
+    "fileDependencies": {
+        "microbit.ts": "target:microbit",
+        "calliope.ts": "target:calliopemini"
+    },
     "public": true,
     "supportedTargets": [
-        "microbit"
+        "microbit",
+        "calliope"
     ]
 }
