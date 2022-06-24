@@ -8,7 +8,6 @@
     "files": [
         "README.md",
         "wappsto.ts",
-        "microbit.ts",
         "calliope.ts",
         "_locales/en/pxt-wappsto-jsdoc-strings.json",
         "_locales/en/pxt-wappsto-strings.json",
@@ -20,13 +19,8 @@
     "testFiles": [
         "wappstotest.ts"
     ],
-    "fileDependencies": {
-        "microbit.ts": "target:microbit",
-        "calliope.ts": "target:calliopemini"
-    },
     "public": true,
     "supportedTargets": [
-        "microbit",
         "calliope"
     ]
 }
