@@ -28,5 +28,14 @@
     "supportedTargets": [
         "microbit",
         "calliope"
-    ]
+    ],
+    "yotta": {
+        "config": {
+            "microbit-dal": {
+                "bluetooth": {
+                    "enabled": 0
+                }
+            }
+        }
+    }
 }
