@@ -28,6 +28,22 @@ enum WappstoTransmit {
     ASAP,
 }
 
+enum WappstoCommand {
+    SetDeviceName,
+    SetNumberConfig,
+    SetStringConfig,
+    SetData,
+    GetInfo,
+    GetNetwork,
+    SetWifi,
+    SetApn,
+    Clean,
+    Save,
+    Sleep,
+}
+
+const versionByteFormat = 1;
+
 /**
  * MakeCode extension for the Seluxit Wappsto:bit extension module.
  */
@@ -168,7 +184,8 @@ namespace wappsto {
 
         control.inBackground(() => {
             while (true) {
-                writeCommand("info");
+                //OLD writeCommand("info");
+                writeSimpleEnumCommand(WappstoCommand.GetInfo);
                 basic.pause(5000);
             }
         });
@@ -176,16 +193,127 @@ namespace wappsto {
         basic.pause(100);
     }
 
+
+    /**
+     * Helper function, add string to buffer
+     */
+    function stringToBufferAppend(str: string, buff: Buffer, offset: number) : void {
+        let i: number;
+        for (i = 0; i < str.length; i++) {
+            buff.setNumber(NumberFormat.UInt8LE, offset+i, str.charCodeAt(i));
+        }
+    }
+
+
+#define ESCAPE_HEX 0x8D
+#define HEADER_HEX 0x8E
+#define END_HEX    0x8F
+#define ADD_AFTER_ESCAPE 0x20
+
+    Add sizez:
+    add 1 byte message begin
+    crc 2 bytes
+
+    // search and replace special characters
+
+    add 1 byte end tag
+
+
+
+
+    /**
+     * Sends a byte report data command to wappsto:bit
+     */
+    function writeReportData(device: number, value: number, data: string): void {
+        let bufferLength = 3 + data.length;
+        let writeBuffer = pins.createBuffer(bufferLength);
+
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 0, versionByteFormat)
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 1, WappstoCommand.SetData);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 2, device)
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 3, value);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 4, data.length);
+
+        toUTF8BufferAppend(data, writeBuffer, 5);
+
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+    }
+
+    /**
+     * Sends a byte set APN command to wappsto:bit
+     */
+    function writeApn(apn: string): void {
+        let bufferLength = 3 + apn.length;
+        let writeBuffer = pins.createBuffer(bufferLength);
+
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 0, versionByteFormat)
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 1, WappstoCommand.SetApn);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 2, apn.length);
+        stringToBufferAppend(apn, writeBuffer, 3);
+
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+    }
+
+    /**
+     * Sends a byte set wifi/password command to wappsto:bit
+     */
+    function writeWifi(ssid: string, password: string): void {
+        let bufferLength = 3 + ssid.length + 1 + password.length;
+        let writeBuffer = pins.createBuffer(bufferLength);
+
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 0, versionByteFormat)
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 1, WappstoCommand.SetWifi);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 2, ssid.length);
+        stringToBufferAppend(ssid, writeBuffer, 3);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 4+ssid.length, password.length);
+        stringToBufferAppend(password, writeBuffer, 4+ssid.length+1);
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+    }
+
+    /**
+     * Sends a byte simple command to wappsto:bit (no data)
+     */
+    function writeSimpleEnumCommand(cmd: WappstoCommand): void {
+        switch(cmd) {
+        case WappstoCommand.SetDeviceName:
+        case WappstoCommand.SetNumberConfig:
+        case WappstoCommand.SetStringConfig:
+        case WappstoCommand.SetData:
+        case WappstoCommand.SetWifi:
+        case WappstoCommand.SetApn:
+            // Contain data
+            return;
+        case WappstoCommand.GetInfo:
+        case WappstoCommand.Clean:
+        case WappstoCommand.Save:
+        case WappstoCommand.Sleep:
+            // These are simple commands
+            break;
+        default:
+            return;
+        }
+        let writeBuffer = pins.createBuffer(2);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 0, versionByteFormat)
+        writeBuffer.setNumber(NumberFormat.UInt8LE, 1, cmd);
+
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+    }
+
     /**
      * Sends a command to wappsto:bit
      */
     function writeCommand(cmd: string): void {
-        let json = createJSON();
-        json["command"] = cmd;
+        //let json = createJSON();
+        //json["command"] = cmd;
         if (cmd == "info") {
-            i2cWrite(json);
+            //old i2cWrite(json);
         } else {
-            writeToWappstobit(json);
+            //rem writeToWappstobit(json);
+            // TODO
         }
     }
 
@@ -200,12 +328,7 @@ namespace wappsto {
             }
             oldValue[value] = data;
         }
-
-        let json = createJSON();
-        json["device"] = device.toString();
-        json["value"] = value.toString();
-        json["data"] = data;
-        writeToWappstobit(json);
+        writeReportData(device, value, data);
     }
 
     /**
@@ -226,12 +349,11 @@ namespace wappsto {
             }
         }
 
-        i2cWrite(json);
+        //rem i2cWrite(json);
     }
 
     /**
      * Write JSON to the I2C bus
-     */
     function i2cWrite(json: { [index: string]: string }): void {
         let data: string = generateJSON(json);
         let buffer: Buffer = toUTF8Buffer(data);
@@ -241,10 +363,51 @@ namespace wappsto {
 
         pins.i2cWriteBuffer(i2cDevice, buffer, false);
     }
+     */
 
     /**
      *Convert string into UTF8 buffer
      */
+    function toUTF8BufferAppend(str: string, buff: Buffer, offset: number) : void {
+        let utf8: number[] = [];
+        let i: number;
+        for (i = 0; i < str.length; i++) {
+            let charcode: number = str.charCodeAt(i);
+            if (charcode < 0x80) {
+                utf8.push(charcode);
+            }
+            else if (charcode < 0x800) {
+                utf8.push(0xc0 | (charcode >> 6));
+                utf8.push(0x80 | (charcode & 0x3f));
+            }
+            else if (charcode < 0xd800 || charcode >= 0xe000) {
+                utf8.push(0xe0 | (charcode >> 12));
+                utf8.push(0x80 | ((charcode >> 6) & 0x3f));
+                utf8.push(0x80 | (charcode & 0x3f));
+            }
+            // surrogate pair
+            else {
+                i++;
+                // UTF-16 encodes 0x10000-0x10FFFF by
+                // subtracting 0x10000 and splitting the
+                // 20 bits of 0x0-0xFFFFF into two halves
+                charcode = 0x10000 + (((charcode & 0x3ff) << 10)
+                    | (str.charCodeAt(i) & 0x3ff));
+                utf8.push(0xf0 | (charcode >> 18));
+                utf8.push(0x80 | ((charcode >> 12) & 0x3f));
+                utf8.push(0x80 | ((charcode >> 6) & 0x3f));
+                utf8.push(0x80 | (charcode & 0x3f));
+            }
+        }
+
+        for (i = 0; i < utf8.length; i++) {
+            buff.setNumber(NumberFormat.UInt8LE, offset+i, utf8[i]);
+        }
+
+    }
+
+    /**
+     *Convert string into UTF8 buffer
     function toUTF8Buffer(str: string): Buffer {
         let utf8: number[] = [];
         let i: number;
@@ -285,6 +448,7 @@ namespace wappsto {
 
         return buffer;
     }
+     */
 
     /**
      * Send device name to wappsto:bit
@@ -620,12 +784,7 @@ namespace wappsto {
     //% group="Wappsto:bit configuration"
     //% advanced=true
     export function configureWifi(ssid: string, pass: string): void {
-        let json = createJSON();
-        json["command"] = "config_wifi";
-        json["ssid"] = ssid;
-        json["pass"] = pass;
-
-        writeToWappstobit(json);
+        writeWifi(ssid, pass);
     }
 
     /**
@@ -638,11 +797,7 @@ namespace wappsto {
     //% group="Wappsto:bit configuration"
     //% advanced=true
     export function configureApn(apn: string): void {
-        let json = createJSON();
-        json["command"] = "config_apn";
-        json["apn"] = apn;
-
-        writeToWappstobit(json);
+        writeApn(apn);
     }
 
     /**
@@ -654,7 +809,7 @@ namespace wappsto {
     //% group="Wappsto:bit configuration"
     export function commandSleep(): void {
         pins.digitalWritePin(wakePin, 0)
-        writeCommand("sleep");
+        writeSimpleEnumCommand(WappstoCommand.Sleep);
     }
 
     /**
@@ -679,7 +834,7 @@ namespace wappsto {
     //% blockId="wapp_clean" block="send request to clear Wappsto"
     //% group="Data model"
     export function sendCleanToWappsto(): void {
-        writeCommand("clean");
+        writeSimpleEnumCommand(WappstoCommand.Clean);
     }
 
     /**
