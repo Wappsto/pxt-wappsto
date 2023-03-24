@@ -30,11 +30,17 @@ enum WappstoTransmit {
 
 enum WappstoCommand {
     SetDeviceName,
-    SetNumberConfig,
-    SetStringConfig,
+    SetValueDefault,
+    SetValueName,
+    SetValueType,
+    SetValueRangeMin,
+    SetValueRangeMax,
+    SetValueRangeStep,
+    SetValueUnit,
     SetData,
     GetInfo,
     GetNetwork,
+    GetLocation,
     SetWifi,
     SetApn,
     Clean,
@@ -42,7 +48,36 @@ enum WappstoCommand {
     Sleep,
 }
 
-const versionByteFormat = 1;
+enum WappstoResponse {
+    ResponseError,
+    ResponseCtrlData,
+    ResponseInfo,
+    ResponseInfoUptime,
+    ResponseInfoUTC,
+    ResponseInfoLoc,
+}
+
+const deviceId = 1;
+
+const versionByteFormat = 2;
+const HEADER_A = 0x42; // TBD
+const HEADER_B = 0x21; // TBD
+
+const BEGIN_TAG_A_INDEX   = 0;
+const BEGIN_TAG_B_INDEX   = 1;
+const VERSION_INDEX       = 2;
+const REQ_LEN_INDEX       = 3;
+const CRC_A_INDEX         = 4;
+const CRC_B_INDEX         = 5;
+const COMMAND_INDEX       = 6;
+
+const REQ_HEADER_LEN        = 7;
+
+const INFO_READY_INDEX      = 7;
+const INFO_QUEUE_FULL_INDEX = 8;
+const INFO_SIGNAL           = 9;
+const INFO_VERSION_INDEX    = 10;
+
 
 /**
  * MakeCode extension for the Seluxit Wappsto:bit extension module.
@@ -54,8 +89,7 @@ namespace wappsto {
     let initialized: boolean = false;
     let deviceName: string = "Wappsto:bit";
     let i2cDevice: number = 0x11;
-    let bufferSize: number = 256;
-    let i2cChunkSize: number = 12;
+    let bufferSize: number = 110;
     let handlers: any[] = [];
     let model: { [index: string]: string }[] = [];
     let oldValue: any[] = [];
@@ -69,45 +103,16 @@ namespace wappsto {
     let wappstoConnected: boolean = false;
     let queueFull: boolean = false;
 
-    /**
-     * Create a empty JSON obj
-     */
-    function createJSON(): { [index: string]: string } {
-        let res: { [index: string]: string } = {};
-        return res;
-    }
-
-    /**
-     * Convert string into JSON obj
-     */
-    function parseJSON(data: string): { [index: string]: string } {
-        let res = createJSON();
-        let start = data.indexOf("{");
-        let end = data.indexOf("}");
-        if(start != -1 && end != -1) {
-            data = data.slice(start, end).replace("{","").replace("}","").replaceAll("\"","")
-            let aData = data.split(",");
-            for (let i = 0; i < aData.length; i++) {
-                let arr: Array<string> = aData[i].split(":");
-                res[arr[0]] = arr[1];
-            }
+    function handleInfo(ready: number, qF: number, signal: number): void {
+        //serial.writeString("\n Ready: " + ready + " QF: " + queueFull + " signal: " + signal + "\n");
+        queueFull = (qF == 1);
+        if ((ready == 1) && !wappstoConnected) {
+            wappstoConnected = true;
+            sendConfiguration();
+        } else if (ready == 0) {
+            wappstoConnected = false;
         }
-        return res;
-    }
 
-    /**
-     * Convert JSON obj into string
-     */
-    function generateJSON(data: { [index: string]: string }): string {
-        let json: string = "";
-        let keys: string[] = Object.keys(data);
-        for (let i = 0; i < keys.length; i++) {
-            if (json != "") {
-                json += ",";
-            }
-            json += '"' + keys[i] + '":"' + data[keys[i]] + '"';
-        }
-        return '{' + json + '}';
     }
 
     /**
@@ -129,54 +134,76 @@ namespace wappsto {
         }
 
         control.inBackground(() => {
-            let readBuffer = pins.createBuffer(bufferSize);
-            readBuffer.fill(0xff);
             let index = 0;
+            let res_id: WappstoResponse;
+            let res_len: number;
+            let tmp: number = 0;
             while (true) {
-                let bufr: Buffer = pins.i2cReadBuffer(i2cDevice, i2cChunkSize, false);
-                if (bufr[0] == 0xff || (bufr[0] != 0x00 && bufr[1] == 0xff) || (bufr[0] == 0x00 && bufr[1] == 0x00)) {
-                    //skip empty buffer and 1 byte garbage
+                let bufr: Buffer = pins.i2cReadBuffer(i2cDevice, bufferSize, false);
+
+                if(bufr[0] == HEADER_A && bufr[1] == HEADER_B) {
+                    res_id = bufr[COMMAND_INDEX];
+                    res_len = bufr[REQ_LEN_INDEX];
+                    switch(res_id) {
+                    case WappstoResponse.ResponseError:
+                        serial.writeString("Error: ");
+                        break;
+                    case WappstoResponse.ResponseCtrlData:
+                        let test:string = bufr.slice(REQ_HEADER_LEN+2, (res_len-REQ_HEADER_LEN-2)).toString();
+                        let valId: number = bufr[REQ_HEADER_LEN+1];
+                        callHandler(valId, test);
+                        break;
+                    case WappstoResponse.ResponseInfo:
+                        //serial.writeString("Info: ");
+                        handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
+                        //serial.writeString("\nVersion: " + bufr[INFO_VERSION_INDEX]);
+                        break;
+                    case WappstoResponse.ResponseInfoUptime:
+                        //serial.writeString("Info Uptime: ");
+                        handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
+                        wappstoUptime = parseInt(bufr.slice(INFO_VERSION_INDEX, res_len).toString());
+                        //serial.writeString("Uptime: " + wappstoUptime);
+                        break;
+                    case WappstoResponse.ResponseInfoUTC:
+                        //serial.writeString("Info UTC: ");
+                        handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
+                        wappstoTime = parseInt(bufr.slice(INFO_VERSION_INDEX, res_len).toString());
+                        //serial.writeString("UTC: " + wappstoTime);
+                        break;
+                    case WappstoResponse.ResponseInfoLoc:
+                        handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
+                        //serial.writeString("Info Location: ");
+                        tmp = parseFloat(bufr.slice(INFO_VERSION_INDEX, 12).toString());
+                        if (tmp != 0.0) {
+                            gpsLatitude = tmp;
+                        }
+                        tmp = parseFloat(bufr.slice(INFO_VERSION_INDEX+12, 12).toString());
+                        if (tmp != 0.0) {
+                            gpsLongitude = tmp;
+                        }
+                        serial.writeString("(" + gpsLatitude + "," + gpsLongitude + ")\n");
+                        break;
+                    default:
+                        //serial.writeString("Unknown response: ["+ bufr[COMMAND_INDEX] + "]" + "len: " + bufr[REQ_LEN_INDEX] + "\n");
+                        //serial.writeString(bufr.toHex());
+                        //serial.writeString("\nmsg done\n");
+                        basic.pause(100);
+                        continue;
+                    }
+                    //serial.writeString("["+ res_id + "]" + "len: " + res_len + "\n");
+                    //serial.writeString(bufr.toHex());
+                    //serial.writeString("\nmsg done\n");
+                    bufr.fill(0xff);
+                } else {
+                    /*
+                    if(bufr[0] != 0) {
+                        serial.writeNumber(bufr[0]);
+                    }
+                    */
+                    //readBuffer.fill(0xff);
                     basic.pause(100);
                     continue;
                 }
-
-                for (let i = 0; i < i2cChunkSize; i++) {
-                    if (bufr[i] == 0xff) {
-                        //break on no more data
-                        break;
-                    }
-                    readBuffer.setNumber(NumberFormat.UInt8LE, index, bufr[i]);
-                    index++;
-
-                    if (index >= bufferSize) {
-                        index = 0;
-                        readBuffer.fill(0xff);
-                        break;
-                    }
-                }
-
-                while ( readBuffer[0] != 0xff ) {
-                    let len = readBuffer.toString().indexOf("\0")
-                    if (len < 0) {
-                        //get more data
-                        break;
-                    }
-                    if (len > 0) {
-                        let data = readBuffer.slice(0, len).toString();
-                        receiveHandler(data);
-                    }
-
-                    // shift buffer and fill with 0xff
-                    readBuffer.shift(++len);
-                    index -= len;
-                    for (let i = bufferSize - len; i < bufferSize; i++) {
-                        readBuffer.setNumber(NumberFormat.UInt8LE, i, 0xff);
-                    }
-
-                    //force scheduler to do context switch
-                    basic.pause(0);
-                }
-
                 //force scheduler to do context switch
                 basic.pause(0);
             }
@@ -184,7 +211,6 @@ namespace wappsto {
 
         control.inBackground(() => {
             while (true) {
-                //OLD writeCommand("info");
                 writeSimpleEnumCommand(WappstoCommand.GetInfo);
                 basic.pause(5000);
             }
@@ -198,43 +224,36 @@ namespace wappsto {
      * Helper function, add string to buffer
      */
     function stringToBufferAppend(str: string, buff: Buffer, offset: number) : void {
-        let i: number;
-        for (i = 0; i < str.length; i++) {
+        for (let i = 0; i < str.length; i++) {
             buff.setNumber(NumberFormat.UInt8LE, offset+i, str.charCodeAt(i));
         }
     }
 
-
-#define ESCAPE_HEX 0x8D
-#define HEADER_HEX 0x8E
-#define END_HEX    0x8F
-#define ADD_AFTER_ESCAPE 0x20
-
-    Add sizez:
-    add 1 byte message begin
-    crc 2 bytes
-
-    // search and replace special characters
-
-    add 1 byte end tag
-
-
+    function addHeader(buff: Buffer, command_id: WappstoCommand, msg_len: number): void {
+        buff.setNumber(NumberFormat.UInt8LE, BEGIN_TAG_A_INDEX, HEADER_A);
+        buff.setNumber(NumberFormat.UInt8LE, BEGIN_TAG_B_INDEX, HEADER_B);
+        buff.setNumber(NumberFormat.UInt8LE, VERSION_INDEX, versionByteFormat);
+        buff.setNumber(NumberFormat.UInt8LE, COMMAND_INDEX, command_id);
+        buff.setNumber(NumberFormat.UInt16LE, CRC_A_INDEX, 0x4321);
+        buff.setNumber(NumberFormat.UInt8LE, REQ_LEN_INDEX, msg_len);
+        serial.writeString("msg_len: " + msg_len + "\n");
+    }
 
 
     /**
      * Sends a byte report data command to wappsto:bit
      */
     function writeReportData(device: number, value: number, data: string): void {
-        let bufferLength = 3 + data.length;
+
+        let bufferLength = REQ_HEADER_LEN + 2 + (data.length*2) + 1;
         let writeBuffer = pins.createBuffer(bufferLength);
 
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 0, versionByteFormat)
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 1, WappstoCommand.SetData);
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 2, device)
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 3, value);
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 4, data.length);
+        addHeader(writeBuffer, WappstoCommand.SetData, bufferLength);
 
-        toUTF8BufferAppend(data, writeBuffer, 5);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, device)
+        writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1, value);
+
+        toUTF8BufferAppend(data, writeBuffer, REQ_HEADER_LEN + 2);
 
         basic.pause(50); // allow microbit i2c ring buffer to empty
         pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
@@ -244,13 +263,13 @@ namespace wappsto {
      * Sends a byte set APN command to wappsto:bit
      */
     function writeApn(apn: string): void {
-        let bufferLength = 3 + apn.length;
+        let bufferLength = REQ_HEADER_LEN + 3 + apn.length;
         let writeBuffer = pins.createBuffer(bufferLength);
 
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 0, versionByteFormat)
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 1, WappstoCommand.SetApn);
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 2, apn.length);
-        stringToBufferAppend(apn, writeBuffer, 3);
+        addHeader(writeBuffer, WappstoCommand.SetApn, bufferLength);
+
+        writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, apn.length);
+        stringToBufferAppend(apn, writeBuffer, REQ_HEADER_LEN + 1);
 
         basic.pause(50); // allow microbit i2c ring buffer to empty
         pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
@@ -260,15 +279,14 @@ namespace wappsto {
      * Sends a byte set wifi/password command to wappsto:bit
      */
     function writeWifi(ssid: string, password: string): void {
-        let bufferLength = 3 + ssid.length + 1 + password.length;
+        let bufferLength = REQ_HEADER_LEN + 3 + ssid.length + 1 + password.length;
         let writeBuffer = pins.createBuffer(bufferLength);
+        addHeader(writeBuffer, WappstoCommand.SetWifi, bufferLength);
 
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 0, versionByteFormat)
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 1, WappstoCommand.SetWifi);
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 2, ssid.length);
-        stringToBufferAppend(ssid, writeBuffer, 3);
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 4+ssid.length, password.length);
-        stringToBufferAppend(password, writeBuffer, 4+ssid.length+1);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, ssid.length);
+        stringToBufferAppend(ssid, writeBuffer, REQ_HEADER_LEN + 1);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1 + ssid.length, password.length);
+        stringToBufferAppend(password, writeBuffer, REQ_HEADER_LEN + 2 + ssid.length);
         basic.pause(50); // allow microbit i2c ring buffer to empty
         pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
     }
@@ -279,8 +297,12 @@ namespace wappsto {
     function writeSimpleEnumCommand(cmd: WappstoCommand): void {
         switch(cmd) {
         case WappstoCommand.SetDeviceName:
-        case WappstoCommand.SetNumberConfig:
-        case WappstoCommand.SetStringConfig:
+        case WappstoCommand.SetValueName:
+        case WappstoCommand.SetValueType:
+        case WappstoCommand.SetValueRangeMin:
+        case WappstoCommand.SetValueRangeMax:
+        case WappstoCommand.SetValueRangeStep:
+        case WappstoCommand.SetValueUnit:
         case WappstoCommand.SetData:
         case WappstoCommand.SetWifi:
         case WappstoCommand.SetApn:
@@ -295,26 +317,11 @@ namespace wappsto {
         default:
             return;
         }
-        let writeBuffer = pins.createBuffer(2);
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 0, versionByteFormat)
-        writeBuffer.setNumber(NumberFormat.UInt8LE, 1, cmd);
+        let writeBuffer = pins.createBuffer(REQ_HEADER_LEN);
+        addHeader(writeBuffer, cmd, REQ_HEADER_LEN);
 
         basic.pause(50); // allow microbit i2c ring buffer to empty
         pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
-    }
-
-    /**
-     * Sends a command to wappsto:bit
-     */
-    function writeCommand(cmd: string): void {
-        //let json = createJSON();
-        //json["command"] = cmd;
-        if (cmd == "info") {
-            //old i2cWrite(json);
-        } else {
-            //rem writeToWappstobit(json);
-            // TODO
-        }
     }
 
     /**
@@ -353,22 +360,9 @@ namespace wappsto {
     }
 
     /**
-     * Write JSON to the I2C bus
-    function i2cWrite(json: { [index: string]: string }): void {
-        let data: string = generateJSON(json);
-        let buffer: Buffer = toUTF8Buffer(data);
-
-        // allow microbit i2c ring buffer to empty
-        basic.pause(50);
-
-        pins.i2cWriteBuffer(i2cDevice, buffer, false);
-    }
-     */
-
-    /**
      *Convert string into UTF8 buffer
      */
-    function toUTF8BufferAppend(str: string, buff: Buffer, offset: number) : void {
+    function toUTF8BufferAppend(str: string, buff: Buffer, offset: number): void {
         let utf8: number[] = [];
         let i: number;
         for (i = 0; i < str.length; i++) {
@@ -407,65 +401,29 @@ namespace wappsto {
     }
 
     /**
-     *Convert string into UTF8 buffer
-    function toUTF8Buffer(str: string): Buffer {
-        let utf8: number[] = [];
-        let i: number;
-        for (i = 0; i < str.length; i++) {
-            let charcode: number = str.charCodeAt(i);
-            if (charcode < 0x80) {
-                utf8.push(charcode);
-            }
-            else if (charcode < 0x800) {
-                utf8.push(0xc0 | (charcode >> 6));
-                utf8.push(0x80 | (charcode & 0x3f));
-            }
-            else if (charcode < 0xd800 || charcode >= 0xe000) {
-                utf8.push(0xe0 | (charcode >> 12));
-                utf8.push(0x80 | ((charcode >> 6) & 0x3f));
-                utf8.push(0x80 | (charcode & 0x3f));
-            }
-            // surrogate pair
-            else {
-                i++;
-                // UTF-16 encodes 0x10000-0x10FFFF by
-                // subtracting 0x10000 and splitting the
-                // 20 bits of 0x0-0xFFFFF into two halves
-                charcode = 0x10000 + (((charcode & 0x3ff) << 10)
-                    | (str.charCodeAt(i) & 0x3ff));
-                utf8.push(0xf0 | (charcode >> 18));
-                utf8.push(0x80 | ((charcode >> 12) & 0x3f));
-                utf8.push(0x80 | ((charcode >> 6) & 0x3f));
-                utf8.push(0x80 | (charcode & 0x3f));
-            }
-        }
-
-        let buffer: Buffer = pins.createBuffer(utf8.length + 1);
-        buffer.setNumber(NumberFormat.UInt8LE, utf8.length, 0x00);
-        for (i = 0; i < utf8.length; i++) {
-            buffer.setNumber(NumberFormat.UInt8LE, i, utf8[i]);
-        }
-
-        return buffer;
-    }
-     */
-
-    /**
      * Send device name to wappsto:bit
      */
     function sendDeviceToWappsto(name: string): void {
-        let json = createJSON();
+        if (!wappstoConnected) {
+            return;
+        }
+        let bufLength: number = (REQ_HEADER_LEN + 1 + name.length + 1);
+        let writeBuffer = pins.createBuffer(bufLength);
+        addHeader(writeBuffer, WappstoCommand.SetDeviceName, bufLength);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, deviceId);
+        stringToBufferAppend(name, writeBuffer, REQ_HEADER_LEN + 1);
 
-        json["device"] = "1";
-        json["name"] = name;
-        json["version"] = version;
-        writeToWappstobit(json);
+        //serial.writeString(writeBuffer.toHex());
+        //serial.writeString("\nTX done\n");
+
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
     }
 
     /**
      * Create a value on Wappsto
      */
-     function createvalue(valueID: number, json: { [index: string]: string }) : void {
+     function createvalue(valueID: number, json: { [index: string]: string }): void {
         model[valueID] = json;
         writeToWappstobit(json);
      }
@@ -474,11 +432,18 @@ namespace wappsto {
      * Create a defualt value on Wappsto
      */
     function createDefaultValue(valueID: number): void {
-        let json = createJSON();
-        json["device"] = "1";
-        json["value"] = valueID.toString();
+        serial.writeString(`Create default value: ${valueID}\n`);
+        let bufLength: number = (REQ_HEADER_LEN + 2);
+        let writeBuffer = pins.createBuffer(bufLength);
+        addHeader(writeBuffer, WappstoCommand.SetValueDefault, bufLength);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, deviceId);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1, valueID);
 
-        createvalue(valueID, json);
+        serial.writeString(writeBuffer.toHex());
+        serial.writeString("\nTX done\n");
+
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
     }
 
     /**
@@ -509,76 +474,30 @@ namespace wappsto {
     }
 
     /**
-     * Handle data received from the wappsto:bit
-     */
-    function receiveHandler(data: string): void {
-        let json = parseJSON(data);
-        let keys: string[] = Object.keys(json);
-        let tmp: number = 0;
-        let val: string = json["data"];
-
-        if (val != null) {
-            if (json["device"] != "1") {
-                return;
-            }
-            let index: number = parseInt(json["value"]);
-            callHandler(index, val);
-            return;
-        }
-
-        for (let i: number = 0; i < keys.length; i++) {
-            val = json[keys[i]];
-            switch (keys[i]) {
-                case "lon":
-                    tmp = parseFloat(val);
-                    if (tmp != 0.0) {
-                        gpsLongitude = tmp;
-                    }
-                    break;
-                case "lat":
-                    tmp = parseFloat(val);
-                    if (tmp != 0.0) {
-                        gpsLatitude = tmp;
-                    }
-                    break;
-                case "signal":
-                    signal = parseInt(val);
-                    break;
-                case "status":
-                    connectionStatus = val;
-                    break;
-                case "network":
-                    connectionInfo = val;
-                    break;
-                case "queue_full":
-                    queueFull = parseInt(val) == 1;
-                    break;
-                case "utc_time":
-                    wappstoTime = parseInt(val);
-                    break;
-                case "uptime":
-                    wappstoUptime = parseInt(val);
-                    break;
-                case "ready":
-                    let wappstoReady: boolean = parseInt(val) == 1;
-                    if (wappstoReady && !wappstoConnected) {
-                        wappstoConnected = true;
-                        sendConfiguration();
-                    } else if (!wappstoReady) {
-                        wappstoConnected = false;
-                    }
-                    break;
-            }
-        }
-    }
-
-    /**
      * Fail if the number is outside the range
      */
     function checkRange(x: number, min: number, max: number): void {
         if (x < min || x > max) {
             control.fail("ValueId " + x + " not in range " + min + "-" + max);
         }
+    }
+
+    function createvalueStr(cmd: number, valueID: number, data: string): void {
+        serial.writeString(`Create [${cmd}] value[${valueID}] data:[${data}]\n`);
+
+        let bufLength: number = (REQ_HEADER_LEN + 2 + (data.length*2) + 1);
+        let writeBuffer = pins.createBuffer(bufLength);
+        addHeader(writeBuffer, cmd, bufLength);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, deviceId);
+        writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1, valueID);
+
+        stringToBufferAppend(data, writeBuffer, REQ_HEADER_LEN + 2);
+
+        serial.writeString(writeBuffer.toHex());
+        serial.writeString("\n");
+
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
     }
 
     /**
@@ -664,17 +583,19 @@ namespace wappsto {
         if (unit == null) {
             unit = "";
         }
-        let json = createJSON();
-        json["device"] = "1";
-        json["value"] = valueID.toString();
-        json["name"] = name;
-        json["type"] = type;
-        json["min"] = min.toString();
-        json["max"] = max.toString();
-        json["step"] = step.toString();
-        json["unit"] = unit;
 
-        createvalue(valueID, json);
+        createvalueStr(WappstoCommand.SetValueRangeMin, valueID, min.toString());
+        basic.pause(200);
+        createvalueStr(WappstoCommand.SetValueRangeMax, valueID, max.toString());
+        basic.pause(200);
+        createvalueStr(WappstoCommand.SetValueRangeStep, valueID, step.toString());
+        basic.pause(200);
+        createvalueStr(WappstoCommand.SetValueUnit, valueID, unit);
+        basic.pause(200);
+        createvalueStr(WappstoCommand.SetValueType, valueID, type);
+        basic.pause(200);
+        createvalueStr(WappstoCommand.SetValueName, valueID, name);
+        basic.pause(200);
     }
 
     /**
@@ -692,13 +613,11 @@ namespace wappsto {
     export function configureStringValue(valueID: number, name: string, type: string): void {
         checkRange(valueID, 16, 20);
 
-        let json = createJSON();
-        json["device"] = "1";
-        json["value"] = valueID.toString();
-        json["name"] = name;
-        json["type"] = type;
+        createvalueStr(WappstoCommand.SetValueType, valueID, type);
+        basic.pause(200);
 
-        createvalue(valueID, json);
+        createvalueStr(WappstoCommand.SetValueName, valueID, name);
+        basic.pause(200);
     }
 
     /**
@@ -713,6 +632,7 @@ namespace wappsto {
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
     export function sendNumberToWappsto(input: number, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
+        serial.writeString("SendNumberToWappsto " + valueID + "\n");
         checkRange(valueID, 1, 15);
         writeValueUpdate(1, valueID, input.toString(), behaviour);
     }
