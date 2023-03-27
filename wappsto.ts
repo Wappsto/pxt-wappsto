@@ -154,25 +154,25 @@ namespace wappsto {
                         callHandler(valId, test);
                         break;
                     case WappstoResponse.ResponseInfo:
-                        //serial.writeString("Info: ");
+                        serial.writeString("Info: ");
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
                         //serial.writeString("\nVersion: " + bufr[INFO_VERSION_INDEX]);
                         break;
                     case WappstoResponse.ResponseInfoUptime:
-                        //serial.writeString("Info Uptime: ");
+                        serial.writeString("Info Uptime: ");
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
                         wappstoUptime = parseInt(bufr.slice(INFO_VERSION_INDEX, res_len).toString());
                         //serial.writeString("Uptime: " + wappstoUptime);
                         break;
                     case WappstoResponse.ResponseInfoUTC:
-                        //serial.writeString("Info UTC: ");
+                        serial.writeString("Info UTC: ");
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
                         wappstoTime = parseInt(bufr.slice(INFO_VERSION_INDEX, res_len).toString());
                         //serial.writeString("UTC: " + wappstoTime);
                         break;
                     case WappstoResponse.ResponseInfoLoc:
+                        serial.writeString("Info Location: "); // TODO currently location information is not decoded correctly
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
-                        //serial.writeString("Info Location: ");
                         tmp = parseFloat(bufr.slice(INFO_VERSION_INDEX, 12).toString());
                         if (tmp != 0.0) {
                             gpsLatitude = tmp;
@@ -195,12 +195,6 @@ namespace wappsto {
                     //serial.writeString("\nmsg done\n");
                     bufr.fill(0xff);
                 } else {
-                    /*
-                    if(bufr[0] != 0) {
-                        serial.writeNumber(bufr[0]);
-                    }
-                    */
-                    //readBuffer.fill(0xff);
                     basic.pause(100);
                     continue;
                 }
@@ -219,6 +213,22 @@ namespace wappsto {
         basic.pause(100);
     }
 
+    function writeBufferI2c(writeBuffer: Buffer): void {
+        // If the message is a value update or a clean command
+        // Is this still required??? if (json["data"] != null || json["command"] == "clean") {
+
+        // Drop messages when wappsto:bit is not ready
+        if (!wappstoConnected) {
+            return;
+        }
+        // Wait untill queue is not full
+        while (queueFull) {
+            basic.pause(100);
+        }
+
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+    }
 
     /**
      * Helper function, add string to buffer
@@ -239,7 +249,6 @@ namespace wappsto {
         serial.writeString("msg_len: " + msg_len + "\n");
     }
 
-
     /**
      * Sends a byte report data command to wappsto:bit
      */
@@ -255,8 +264,7 @@ namespace wappsto {
 
         toUTF8BufferAppend(data, writeBuffer, REQ_HEADER_LEN + 2);
 
-        basic.pause(50); // allow microbit i2c ring buffer to empty
-        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+        writeBufferI2c(writeBuffer);
     }
 
     /**
@@ -271,8 +279,7 @@ namespace wappsto {
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, apn.length);
         stringToBufferAppend(apn, writeBuffer, REQ_HEADER_LEN + 1);
 
-        basic.pause(50); // allow microbit i2c ring buffer to empty
-        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+        writeBufferI2c(writeBuffer);
     }
 
     /**
@@ -287,8 +294,8 @@ namespace wappsto {
         stringToBufferAppend(ssid, writeBuffer, REQ_HEADER_LEN + 1);
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1 + ssid.length, password.length);
         stringToBufferAppend(password, writeBuffer, REQ_HEADER_LEN + 2 + ssid.length);
-        basic.pause(50); // allow microbit i2c ring buffer to empty
-        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+
+        writeBufferI2c(writeBuffer);
     }
 
     /**
@@ -319,9 +326,7 @@ namespace wappsto {
         }
         let writeBuffer = pins.createBuffer(REQ_HEADER_LEN);
         addHeader(writeBuffer, cmd, REQ_HEADER_LEN);
-
-        basic.pause(50); // allow microbit i2c ring buffer to empty
-        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+        writeBufferI2c(writeBuffer);
     }
 
     /**
@@ -336,27 +341,6 @@ namespace wappsto {
             oldValue[value] = data;
         }
         writeReportData(device, value, data);
-    }
-
-    /**
-     * Send the message to wappsto:bit if we are connected and the queue is not full
-     */
-    function writeToWappstobit(json: { [index: string]: string }): void {
-        initialize(deviceName);
-
-        // If the message is a value update or a clean command
-        if (json["data"] != null || json["command"] == "clean") {
-            // Drop messages when wappsto:bit is not ready
-            if (!wappstoConnected) {
-                return;
-            }
-            // Wait untill queue is not full
-            while (queueFull) {
-                basic.pause(100);
-            }
-        }
-
-        //rem i2cWrite(json);
     }
 
     /**
@@ -416,17 +400,8 @@ namespace wappsto {
         //serial.writeString(writeBuffer.toHex());
         //serial.writeString("\nTX done\n");
 
-        basic.pause(50); // allow microbit i2c ring buffer to empty
-        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+        writeBufferI2c(writeBuffer);
     }
-
-    /**
-     * Create a value on Wappsto
-     */
-     function createvalue(valueID: number, json: { [index: string]: string }): void {
-        model[valueID] = json;
-        writeToWappstobit(json);
-     }
 
     /**
      * Create a defualt value on Wappsto
@@ -442,8 +417,7 @@ namespace wappsto {
         serial.writeString(writeBuffer.toHex());
         serial.writeString("\nTX done\n");
 
-        basic.pause(50); // allow microbit i2c ring buffer to empty
-        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+        writeBufferI2c(writeBuffer);
     }
 
     /**
@@ -467,7 +441,8 @@ namespace wappsto {
             sendDeviceToWappsto(deviceName)
             for (let i: number = 0; i < model.length; i++) {
                 if (model[i]) {
-                    writeToWappstobit(model[i]);
+                    //writeToWappstobit(model[i]);
+                    // TODO use new write configuration instead
                 }
             }
         });
@@ -496,8 +471,7 @@ namespace wappsto {
         serial.writeString(writeBuffer.toHex());
         serial.writeString("\n");
 
-        basic.pause(50); // allow microbit i2c ring buffer to empty
-        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+        writeBufferI2c(writeBuffer);
     }
 
     /**
@@ -585,17 +559,11 @@ namespace wappsto {
         }
 
         createvalueStr(WappstoCommand.SetValueRangeMin, valueID, min.toString());
-        basic.pause(200);
         createvalueStr(WappstoCommand.SetValueRangeMax, valueID, max.toString());
-        basic.pause(200);
         createvalueStr(WappstoCommand.SetValueRangeStep, valueID, step.toString());
-        basic.pause(200);
         createvalueStr(WappstoCommand.SetValueUnit, valueID, unit);
-        basic.pause(200);
         createvalueStr(WappstoCommand.SetValueType, valueID, type);
-        basic.pause(200);
         createvalueStr(WappstoCommand.SetValueName, valueID, name);
-        basic.pause(200);
     }
 
     /**
@@ -614,10 +582,7 @@ namespace wappsto {
         checkRange(valueID, 16, 20);
 
         createvalueStr(WappstoCommand.SetValueType, valueID, type);
-        basic.pause(200);
-
         createvalueStr(WappstoCommand.SetValueName, valueID, name);
-        basic.pause(200);
     }
 
     /**
