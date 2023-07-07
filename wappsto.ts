@@ -89,9 +89,9 @@ namespace wappsto {
     let initialized: boolean = false;
     let deviceName: string = "Wappsto:bit";
     let i2cDevice: number = 0x11;
-    let bufferSize: number = 110;
+    let bufferSize: number = 64;
     let handlers: any[] = [];
-    let model: { [index: string]: string }[] = [];
+    //let model: { [index: string]: string }[] = [];
     let oldValue: any[] = [];
     let gpsLongitude: number = NaN;
     let gpsLatitude: number = NaN;
@@ -119,6 +119,7 @@ namespace wappsto {
      * Setup communication with wappsto:bit
      */
     function initialize(name: string): void {
+
         if (initialized) {
             if (name != deviceName) {
                 deviceName = name;
@@ -127,6 +128,7 @@ namespace wappsto {
             return;
         }
 
+        //serial.writeString("INITIALIZE!!!!");
         initialized = true;
         deviceName = name;
         if (wappstoConnected) {
@@ -146,32 +148,33 @@ namespace wappsto {
                     res_len = bufr[REQ_LEN_INDEX];
                     switch(res_id) {
                     case WappstoResponse.ResponseError:
-                        serial.writeString("Error: ");
+                        //serial.writeString("Error: ");
                         break;
                     case WappstoResponse.ResponseCtrlData:
+                        //serial.writeString("Control: ");
                         let test:string = bufr.slice(REQ_HEADER_LEN+2, (res_len-REQ_HEADER_LEN-2)).toString();
                         let valId: number = bufr[REQ_HEADER_LEN+1];
                         callHandler(valId, test);
                         break;
                     case WappstoResponse.ResponseInfo:
-                        serial.writeString("Info: ");
+                        //serial.writeString("Info: ");
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
                         //serial.writeString("\nVersion: " + bufr[INFO_VERSION_INDEX]);
                         break;
                     case WappstoResponse.ResponseInfoUptime:
-                        serial.writeString("Info Uptime: ");
+                        //serial.writeString("Info Uptime: ");
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
                         wappstoUptime = parseInt(bufr.slice(INFO_VERSION_INDEX, res_len).toString());
                         //serial.writeString("Uptime: " + wappstoUptime);
                         break;
                     case WappstoResponse.ResponseInfoUTC:
-                        serial.writeString("Info UTC: ");
+                        //serial.writeString("Info UTC: ");
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
                         wappstoTime = parseInt(bufr.slice(INFO_VERSION_INDEX, res_len).toString());
                         //serial.writeString("UTC: " + wappstoTime);
                         break;
                     case WappstoResponse.ResponseInfoLoc:
-                        serial.writeString("Info Location: "); // TODO currently location information is not decoded correctly
+                        //serial.writeString("Info Location: "); // TODO currently location information is not decoded correctly
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
                         tmp = parseFloat(bufr.slice(INFO_VERSION_INDEX, 12).toString());
                         if (tmp != 0.0) {
@@ -181,7 +184,7 @@ namespace wappsto {
                         if (tmp != 0.0) {
                             gpsLongitude = tmp;
                         }
-                        serial.writeString("(" + gpsLatitude + "," + gpsLongitude + ")\n");
+                        //serial.writeString("(" + gpsLatitude + "," + gpsLongitude + ")\n");
                         break;
                     default:
                         //serial.writeString("Unknown response: ["+ bufr[COMMAND_INDEX] + "]" + "len: " + bufr[REQ_LEN_INDEX] + "\n");
@@ -205,17 +208,30 @@ namespace wappsto {
 
         control.inBackground(() => {
             while (true) {
-                writeSimpleEnumCommand(WappstoCommand.GetInfo);
+                //serial.writeString("Get info");
+                writeBufferI2cInfo();
                 basic.pause(5000);
             }
         });
 
+
         basic.pause(100);
     }
 
+
+    function writeBufferI2cInfo(): void {
+        let writeBuffer = pins.createBuffer(REQ_HEADER_LEN);
+        addHeader(writeBuffer, WappstoCommand.GetInfo, REQ_HEADER_LEN);
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+    }
+
     function writeBufferI2c(writeBuffer: Buffer): void {
+        initialize(deviceName);
+
         // If the message is a value update or a clean command
         // Is this still required??? if (json["data"] != null || json["command"] == "clean") {
+
 
         // Drop messages when wappsto:bit is not ready
         if (!wappstoConnected) {
@@ -246,7 +262,7 @@ namespace wappsto {
         buff.setNumber(NumberFormat.UInt8LE, COMMAND_INDEX, command_id);
         buff.setNumber(NumberFormat.UInt16LE, CRC_A_INDEX, 0x4321);
         buff.setNumber(NumberFormat.UInt8LE, REQ_LEN_INDEX, msg_len);
-        serial.writeString("msg_len: " + msg_len + "\n");
+        //serial.writeString("msg_len: " + msg_len + "\n");
     }
 
     /**
@@ -316,6 +332,8 @@ namespace wappsto {
             // Contain data
             return;
         case WappstoCommand.GetInfo:
+            // must be handled seperately
+            return;
         case WappstoCommand.Clean:
         case WappstoCommand.Save:
         case WappstoCommand.Sleep:
@@ -407,15 +425,15 @@ namespace wappsto {
      * Create a defualt value on Wappsto
      */
     function createDefaultValue(valueID: number): void {
-        serial.writeString(`Create default value: ${valueID}\n`);
+        //serial.writeString(`Create default value: ${valueID}\n`);
         let bufLength: number = (REQ_HEADER_LEN + 2);
         let writeBuffer = pins.createBuffer(bufLength);
         addHeader(writeBuffer, WappstoCommand.SetValueDefault, bufLength);
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, deviceId);
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1, valueID);
 
-        serial.writeString(writeBuffer.toHex());
-        serial.writeString("\nTX done\n");
+        //serial.writeString(writeBuffer.toHex());
+        //serial.writeString("\nTX done\n");
 
         writeBufferI2c(writeBuffer);
     }
@@ -439,12 +457,13 @@ namespace wappsto {
         // Run in thread to make sure that we do not block receive thread
         control.inBackground(() => {
             sendDeviceToWappsto(deviceName)
+            /*
             for (let i: number = 0; i < model.length; i++) {
                 if (model[i]) {
-                    //writeToWappstobit(model[i]);
-                    // TODO use new write configuration instead
+                    writeToWappstobitModel(model[i]);
                 }
             }
+            */
         });
     }
 
@@ -458,7 +477,7 @@ namespace wappsto {
     }
 
     function createvalueStr(cmd: number, valueID: number, data: string): void {
-        serial.writeString(`Create [${cmd}] value[${valueID}] data:[${data}]\n`);
+        //serial.writeString(`Create [${cmd}] value[${valueID}] data:[${data}]\n`);
 
         let bufLength: number = (REQ_HEADER_LEN + 2 + (data.length*2) + 1);
         let writeBuffer = pins.createBuffer(bufLength);
@@ -468,8 +487,8 @@ namespace wappsto {
 
         stringToBufferAppend(data, writeBuffer, REQ_HEADER_LEN + 2);
 
-        serial.writeString(writeBuffer.toHex());
-        serial.writeString("\n");
+        //serial.writeString(writeBuffer.toHex());
+        //serial.writeString("\n");
 
         writeBufferI2c(writeBuffer);
     }
@@ -500,6 +519,9 @@ namespace wappsto {
     //% type.defl=WappstoValueTemplate.Number
     //% group="Data model"
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
+        while(!wappstoConnected) {
+            basic.pause(500); // block setup till wappsto:bit is online, to save ram for configuration
+        }
         switch (type) {
             case WappstoValueTemplate.Temperature:
                 configureNumberValue(valueID, name, "temperature", -5, 50, 1, "\u00B0C");
@@ -558,11 +580,17 @@ namespace wappsto {
             unit = "";
         }
 
+        basic.pause(100); // check these delays - without them it won't work!!!
         createvalueStr(WappstoCommand.SetValueRangeMin, valueID, min.toString());
+        basic.pause(100);
         createvalueStr(WappstoCommand.SetValueRangeMax, valueID, max.toString());
+        basic.pause(100);
         createvalueStr(WappstoCommand.SetValueRangeStep, valueID, step.toString());
+        basic.pause(100);
         createvalueStr(WappstoCommand.SetValueUnit, valueID, unit);
+        basic.pause(100);
         createvalueStr(WappstoCommand.SetValueType, valueID, type);
+        basic.pause(100);
         createvalueStr(WappstoCommand.SetValueName, valueID, name);
     }
 
@@ -581,6 +609,10 @@ namespace wappsto {
     export function configureStringValue(valueID: number, name: string, type: string): void {
         checkRange(valueID, 16, 20);
 
+        while(!wappstoConnected) {
+            basic.pause(500); // block setup till wappsto:bit is online, to save ram for configuration
+        }
+
         createvalueStr(WappstoCommand.SetValueType, valueID, type);
         createvalueStr(WappstoCommand.SetValueName, valueID, name);
     }
@@ -597,7 +629,7 @@ namespace wappsto {
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
     export function sendNumberToWappsto(input: number, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
-        serial.writeString("SendNumberToWappsto " + valueID + "\n");
+        //serial.writeString("SendNumberToWappsto " + valueID + "\n");
         checkRange(valueID, 1, 15);
         writeValueUpdate(1, valueID, input.toString(), behaviour);
     }
