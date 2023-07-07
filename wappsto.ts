@@ -485,7 +485,7 @@ namespace wappsto {
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, deviceId);
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1, valueID);
 
-        stringToBufferAppend(data, writeBuffer, REQ_HEADER_LEN + 2);
+        toUTF8BufferAppend(data, writeBuffer, REQ_HEADER_LEN + 2);
 
         //serial.writeString(writeBuffer.toHex());
         //serial.writeString("\n");
