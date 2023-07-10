@@ -580,6 +580,10 @@ namespace wappsto {
             unit = "";
         }
 
+        while(!wappstoConnected) {
+            basic.pause(500); // block setup till wappsto:bit is online, to save ram for configuration
+        }
+
         basic.pause(100); // check these delays - without them it won't work!!!
         createvalueStr(WappstoCommand.SetValueRangeMin, valueID, min.toString());
         basic.pause(100);
