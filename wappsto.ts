@@ -295,7 +295,9 @@ namespace wappsto {
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, apn.length);
         stringToBufferAppend(apn, writeBuffer, REQ_HEADER_LEN + 1);
 
-        writeBufferI2c(writeBuffer);
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
+
     }
 
     /**
@@ -303,6 +305,8 @@ namespace wappsto {
      */
     function writeWifi(ssid: string, password: string): void {
         let bufferLength = REQ_HEADER_LEN + 3 + ssid.length + 1 + password.length;
+
+        //serial.writeString(`Wifi: [${ssid.length}] ${ssid} - [${password.length}] ${password}\n`);
         let writeBuffer = pins.createBuffer(bufferLength);
         addHeader(writeBuffer, WappstoCommand.SetWifi, bufferLength);
 
@@ -311,7 +315,8 @@ namespace wappsto {
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1 + ssid.length, password.length);
         stringToBufferAppend(password, writeBuffer, REQ_HEADER_LEN + 2 + ssid.length);
 
-        writeBufferI2c(writeBuffer);
+        basic.pause(50); // allow microbit i2c ring buffer to empty
+        pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
     }
 
     /**
@@ -425,7 +430,6 @@ namespace wappsto {
      * Create a defualt value on Wappsto
      */
     function createDefaultValue(valueID: number): void {
-        //serial.writeString(`Create default value: ${valueID}\n`);
         let bufLength: number = (REQ_HEADER_LEN + 2);
         let writeBuffer = pins.createBuffer(bufLength);
         addHeader(writeBuffer, WappstoCommand.SetValueDefault, bufLength);
@@ -520,7 +524,7 @@ namespace wappsto {
     //% group="Data model"
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
         while(!wappstoConnected) {
-            basic.pause(500); // block setup till wappsto:bit is online, to save ram for configuration
+            basic.pause(500); // block setup till wappsto:bit is online
         }
         switch (type) {
             case WappstoValueTemplate.Temperature:
@@ -579,11 +583,9 @@ namespace wappsto {
         if (unit == null) {
             unit = "";
         }
-
         while(!wappstoConnected) {
-            basic.pause(500); // block setup till wappsto:bit is online, to save ram for configuration
+            basic.pause(500); // block setup till wappsto:bit is online
         }
-
         basic.pause(100); // check these delays - without them it won't work!!!
         createvalueStr(WappstoCommand.SetValueRangeMin, valueID, min.toString());
         basic.pause(100);
@@ -614,7 +616,7 @@ namespace wappsto {
         checkRange(valueID, 16, 20);
 
         while(!wappstoConnected) {
-            basic.pause(500); // block setup till wappsto:bit is online, to save ram for configuration
+            basic.pause(500); // block setup till wappsto:bit is online
         }
 
         createvalueStr(WappstoCommand.SetValueType, valueID, type);
