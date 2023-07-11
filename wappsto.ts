@@ -85,7 +85,6 @@ const INFO_VERSION_INDEX    = 10;
 //% color="#1f324d" weight=90 icon="\uf213" block="Wappsto"
 //% groups=['Data model', 'Wappsto basic flow', 'Wappsto:bit information', 'Wappsto:bit configuration']
 namespace wappsto {
-    let version: string = "1.1.0";
     let initialized: boolean = false;
     let deviceName: string = "Wappsto:bit";
     let i2cDevice: number = 0x11;
@@ -103,8 +102,9 @@ namespace wappsto {
     let wappstoConnected: boolean = false;
     let queueFull: boolean = false;
 
-    function handleInfo(ready: number, qF: number, signal: number): void {
+    function handleInfo(ready: number, qF: number, rfSignal: number): void {
         //serial.writeString("\n Ready: " + ready + " QF: " + queueFull + " signal: " + signal + "\n");
+        signal = rfSignal;
         queueFull = (qF == 1);
         if ((ready == 1) && !wappstoConnected) {
             wappstoConnected = true;
