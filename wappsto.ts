@@ -190,7 +190,7 @@ namespace wappsto {
                         //serial.writeString("Unknown response: ["+ bufr[COMMAND_INDEX] + "]" + "len: " + bufr[REQ_LEN_INDEX] + "\n");
                         //serial.writeString(bufr.toHex());
                         //serial.writeString("\nmsg done\n");
-                        basic.pause(100);
+                        basic.pause(0);
                         continue;
                     }
                     //serial.writeString("["+ res_id + "]" + "len: " + res_len + "\n");
@@ -198,7 +198,7 @@ namespace wappsto {
                     //serial.writeString("\nmsg done\n");
                     bufr.fill(0xff);
                 } else {
-                    basic.pause(100);
+                    basic.pause(0);
                     continue;
                 }
                 //force scheduler to do context switch
@@ -586,17 +586,11 @@ namespace wappsto {
         while(!wappstoConnected) {
             basic.pause(500); // block setup till wappsto:bit is online
         }
-        basic.pause(100); // check these delays - without them it won't work!!!
         createvalueStr(WappstoCommand.SetValueRangeMin, valueID, min.toString());
-        basic.pause(100);
         createvalueStr(WappstoCommand.SetValueRangeMax, valueID, max.toString());
-        basic.pause(100);
         createvalueStr(WappstoCommand.SetValueRangeStep, valueID, step.toString());
-        basic.pause(100);
         createvalueStr(WappstoCommand.SetValueUnit, valueID, unit);
-        basic.pause(100);
         createvalueStr(WappstoCommand.SetValueType, valueID, type);
-        basic.pause(100);
         createvalueStr(WappstoCommand.SetValueName, valueID, name);
     }
 
