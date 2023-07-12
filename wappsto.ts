@@ -96,14 +96,14 @@ namespace wappsto {
     let gpsLatitude: number = NaN;
     let signal: number = 0;
     let connectionStatus: string = "";
-    let connectionInfo: string = "";
+//    let connectionInfo: string = "";
     let wappstoTime: number = NaN;
     let wappstoUptime: number = NaN;
     let wappstoConnected: boolean = false;
     let queueFull: boolean = false;
 
     function handleInfo(ready: number, qF: number, rfSignal: number): void {
-        //serial.writeString("\n Ready: " + ready + " QF: " + queueFull + " signal: " + signal + "\n");
+        //serial.writeString("\n Ready: " + ready + " QF: " + queueFull + " signal: " + rfSignal + "\n");
         signal = rfSignal;
         queueFull = (qF == 1);
         if ((ready == 1) && !wappstoConnected) {
@@ -782,15 +782,16 @@ namespace wappsto {
         return signal;
     }
 
+
     /**
      * Input block returning the network name of which the Wappsto:bit is connected to.
-     */
     //% block="Network Name"
     //% group="Wappsto:bit information"
     //% advanced=true
     export function carrier(): string {
         return connectionInfo;
     }
+     */
 
     /**
      * Input block returning the Wappsto:bit UTC time in seconds.
