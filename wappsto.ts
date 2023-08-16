@@ -209,7 +209,7 @@ namespace wappsto {
         control.inBackground(() => {
             while (true) {
                 //serial.writeString("Get info");
-                writeBufferI2cInfo();
+                writeBufferI2cDirect(WappstoCommand.GetInfo);
                 basic.pause(5000);
             }
         });
@@ -219,9 +219,9 @@ namespace wappsto {
     }
 
 
-    function writeBufferI2cInfo(): void {
+    function writeBufferI2cDirect(cmd: WappstoCommand): void {
         let writeBuffer = pins.createBuffer(REQ_HEADER_LEN);
-        addHeader(writeBuffer, WappstoCommand.GetInfo, REQ_HEADER_LEN);
+        addHeader(writeBuffer, cmd, REQ_HEADER_LEN);
         basic.pause(50); // allow microbit i2c ring buffer to empty
         pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
     }
@@ -340,6 +340,8 @@ namespace wappsto {
             // must be handled seperately
             return;
         case WappstoCommand.Clean:
+            writeBufferI2cDirect(WappstoCommand.Clean);
+            return;
         case WappstoCommand.Save:
         case WappstoCommand.Sleep:
             // These are simple commands
