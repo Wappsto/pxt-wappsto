@@ -16,4 +16,5 @@ install: update
 update:
 	npm install pxt
 	pxt target microbit
+	#pxt target calliopemini
 	pxt install
