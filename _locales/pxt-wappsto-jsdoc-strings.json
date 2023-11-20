@@ -1,7 +1,7 @@
 {
   "wappsto": "MakeCode extension for the Seluxit Wappsto:bit extension module.",
   "wappsto.carrier": "Input block returning the network name of which the Wappsto:bit is connected to.",
-  "wappsto.configureApn": "Configurere the APN to which the Wappsto:bit connects when on cellular network.",
+  "wappsto.configureApn": "Configure the APN to which the Wappsto:bit connects when on cellular network.",
   "wappsto.configureApn|param|apn": "The APN string",
   "wappsto.configureName": "Configure the name of your Micro:bit on Wappsto.",
   "wappsto.configureName|param|name": "The name of your Micro:bit",
@@ -21,7 +21,7 @@
   "wappsto.configureValue|param|name": "The name of the value as seen on Wappsto",
   "wappsto.configureValue|param|type": "The type of the value as seen on Wappsto",
   "wappsto.configureValue|param|valueID": "The id of the value to send",
-  "wappsto.configureWifi": "Configurere the SSID to which the Wappsto:bit connects when on Wi-Fi network.",
+  "wappsto.configureWifi": "Configure the SSID to which the Wappsto:bit connects when on Wi-Fi network.",
   "wappsto.configureWifi|param|ssid": "The SSID to connect to",
   "wappsto.connected": "Conditional block returning a boolean flag to signal whether or not Wappsto:bit is fully connected and ready.",
   "wappsto.latitude": "Input block returning the latitude of the Wappsto:bit. NaN if not available.",
