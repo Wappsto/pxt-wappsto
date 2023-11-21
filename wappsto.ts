@@ -60,8 +60,8 @@ enum WappstoResponse {
 const deviceId = 1;
 
 const versionByteFormat = 2;
-const HEADER_A = 0x42; // TBD
-const HEADER_B = 0x21; // TBD
+const HEADER_A = 0x42;
+const HEADER_B = 0x21;
 
 const BEGIN_TAG_A_INDEX   = 0;
 const BEGIN_TAG_B_INDEX   = 1;
@@ -90,20 +90,17 @@ namespace wappsto {
     let i2cDevice: number = 0x11;
     let bufferSize: number = 64;
     let handlers: any[] = [];
-    //let model: { [index: string]: string }[] = [];
     let oldValue: any[] = [];
     let gpsLongitude: number = NaN;
     let gpsLatitude: number = NaN;
     let signal: number = 0;
     let connectionStatus: string = "";
-//    let connectionInfo: string = "";
     let wappstoTime: number = NaN;
     let wappstoUptime: number = NaN;
     let wappstoConnected: boolean = false;
     let queueFull: boolean = false;
 
     function handleInfo(ready: number, qF: number, rfSignal: number): void {
-        //serial.writeString("\n Ready: " + ready + " QF: " + queueFull + " signal: " + rfSignal + "\n");
         signal = rfSignal;
         queueFull = (qF == 1);
         if ((ready == 1) && !wappstoConnected) {
@@ -128,7 +125,6 @@ namespace wappsto {
             return;
         }
 
-        //serial.writeString("INITIALIZE!!!!");
         initialized = true;
         deviceName = name;
         if (wappstoConnected) {
@@ -148,33 +144,24 @@ namespace wappsto {
                     res_len = bufr[REQ_LEN_INDEX];
                     switch(res_id) {
                     case WappstoResponse.ResponseError:
-                        //serial.writeString("Error: ");
                         break;
                     case WappstoResponse.ResponseCtrlData:
-                        //serial.writeString("Control: ");
                         let test:string = bufr.slice(REQ_HEADER_LEN+2, (res_len-REQ_HEADER_LEN-2)).toString();
                         let valId: number = bufr[REQ_HEADER_LEN+1];
                         callHandler(valId, test);
                         break;
                     case WappstoResponse.ResponseInfo:
-                        //serial.writeString("Info: ");
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
-                        //serial.writeString("\nVersion: " + bufr[INFO_VERSION_INDEX]);
                         break;
                     case WappstoResponse.ResponseInfoUptime:
-                        //serial.writeString("Info Uptime: ");
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
                         wappstoUptime = parseInt(bufr.slice(INFO_VERSION_INDEX, res_len).toString());
-                        //serial.writeString("Uptime: " + wappstoUptime);
                         break;
                     case WappstoResponse.ResponseInfoUTC:
-                        //serial.writeString("Info UTC: ");
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
                         wappstoTime = parseInt(bufr.slice(INFO_VERSION_INDEX, res_len).toString());
-                        //serial.writeString("UTC: " + wappstoTime);
                         break;
                     case WappstoResponse.ResponseInfoLoc:
-                        //serial.writeString("Info Location: "); // TODO currently location information is not decoded correctly
                         handleInfo(bufr[INFO_READY_INDEX], bufr[INFO_QUEUE_FULL_INDEX], bufr[INFO_SIGNAL]);
                         tmp = parseFloat(bufr.slice(INFO_VERSION_INDEX, 12).toString());
                         if (tmp != 0.0) {
@@ -184,18 +171,11 @@ namespace wappsto {
                         if (tmp != 0.0) {
                             gpsLongitude = tmp;
                         }
-                        //serial.writeString("(" + gpsLatitude + "," + gpsLongitude + ")\n");
                         break;
                     default:
-                        //serial.writeString("Unknown response: ["+ bufr[COMMAND_INDEX] + "]" + "len: " + bufr[REQ_LEN_INDEX] + "\n");
-                        //serial.writeString(bufr.toHex());
-                        //serial.writeString("\nmsg done\n");
                         basic.pause(0);
                         continue;
                     }
-                    //serial.writeString("["+ res_id + "]" + "len: " + res_len + "\n");
-                    //serial.writeString(bufr.toHex());
-                    //serial.writeString("\nmsg done\n");
                     bufr.fill(0xff);
                 } else {
                     basic.pause(0);
@@ -208,7 +188,6 @@ namespace wappsto {
 
         control.inBackground(() => {
             while (true) {
-                //serial.writeString("Get info");
                 writeBufferI2cDirect(WappstoCommand.GetInfo);
                 basic.pause(5000);
             }
@@ -228,10 +207,6 @@ namespace wappsto {
 
     function writeBufferI2c(writeBuffer: Buffer): void {
         initialize(deviceName);
-
-        // If the message is a value update or a clean command
-        // Is this still required??? if (json["data"] != null || json["command"] == "clean") {
-
 
         // Drop messages when wappsto:bit is not ready
         if (!wappstoConnected) {
@@ -262,7 +237,6 @@ namespace wappsto {
         buff.setNumber(NumberFormat.UInt8LE, COMMAND_INDEX, command_id);
         buff.setNumber(NumberFormat.UInt16LE, CRC_A_INDEX, 0x4321);
         buff.setNumber(NumberFormat.UInt8LE, REQ_LEN_INDEX, msg_len);
-        //serial.writeString("msg_len: " + msg_len + "\n");
     }
 
     /**
@@ -305,8 +279,6 @@ namespace wappsto {
      */
     function writeWifi(ssid: string, password: string): void {
         let bufferLength = REQ_HEADER_LEN + 3 + ssid.length + 1 + password.length;
-
-        //serial.writeString(`Wifi: [${ssid.length}] ${ssid} - [${password.length}] ${password}\n`);
         let writeBuffer = pins.createBuffer(bufferLength);
         addHeader(writeBuffer, WappstoCommand.SetWifi, bufferLength);
 
@@ -422,9 +394,6 @@ namespace wappsto {
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, deviceId);
         stringToBufferAppend(name, writeBuffer, REQ_HEADER_LEN + 1);
 
-        //serial.writeString(writeBuffer.toHex());
-        //serial.writeString("\nTX done\n");
-
         writeBufferI2c(writeBuffer);
     }
 
@@ -437,9 +406,6 @@ namespace wappsto {
         addHeader(writeBuffer, WappstoCommand.SetValueDefault, bufLength);
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, deviceId);
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1, valueID);
-
-        //serial.writeString(writeBuffer.toHex());
-        //serial.writeString("\nTX done\n");
 
         writeBufferI2c(writeBuffer);
     }
@@ -463,13 +429,6 @@ namespace wappsto {
         // Run in thread to make sure that we do not block receive thread
         control.inBackground(() => {
             sendDeviceToWappsto(deviceName)
-            /*
-            for (let i: number = 0; i < model.length; i++) {
-                if (model[i]) {
-                    writeToWappstobitModel(model[i]);
-                }
-            }
-            */
         });
     }
 
@@ -483,8 +442,6 @@ namespace wappsto {
     }
 
     function createvalueStr(cmd: number, valueID: number, data: string): void {
-        //serial.writeString(`Create [${cmd}] value[${valueID}] data:[${data}]\n`);
-
         let bufLength: number = (REQ_HEADER_LEN + 2 + (data.length*2) + 1);
         let writeBuffer = pins.createBuffer(bufLength);
         addHeader(writeBuffer, cmd, bufLength);
@@ -492,10 +449,6 @@ namespace wappsto {
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1, valueID);
 
         toUTF8BufferAppend(data, writeBuffer, REQ_HEADER_LEN + 2);
-
-        //serial.writeString(writeBuffer.toHex());
-        //serial.writeString("\n");
-
         writeBufferI2c(writeBuffer);
     }
 
@@ -631,7 +584,6 @@ namespace wappsto {
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
     export function sendNumberToWappsto(input: number, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
-        //serial.writeString("SendNumberToWappsto " + valueID + "\n");
         checkRange(valueID, 1, 15);
         writeValueUpdate(1, valueID, input.toString(), behaviour);
     }
@@ -784,16 +736,6 @@ namespace wappsto {
         return signal;
     }
 
-
-    /**
-     * Input block returning the network name of which the Wappsto:bit is connected to.
-    //% block="Network Name"
-    //% group="Wappsto:bit information"
-    //% advanced=true
-    export function carrier(): string {
-        return connectionInfo;
-    }
-     */
 
     /**
      * Input block returning the Wappsto:bit UTC time in seconds.

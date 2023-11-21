@@ -52,10 +52,7 @@
         basic.showString("Bad signal");
     }
     basic.pause(3000);
-/*
-    basic.showString(wappsto.carrier());
-    basic.pause(3000);
-*/
+
     basic.showNumber(wappsto.time());
     basic.pause(1000);
     basic.showNumber(wappsto.uptime());
