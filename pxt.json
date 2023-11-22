@@ -1,6 +1,6 @@
 {
     "name": "pxt-wappsto",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "MakeCode extension for Wappsto:bit IoT module",
     "dependencies": {
         "core": "*"
