@@ -218,7 +218,7 @@ wappsto.connected()
 
 ### configure wifi
 
-Configurere the SSID to which the Wappsto:bit connects when on Wi-Fi network.
+Configure the SSID to which the Wappsto:bit connects when on Wi-Fi network.
 
 ```sig
 wappsto.configureWifi("ssid", "password")
@@ -226,7 +226,7 @@ wappsto.configureWifi("ssid", "password")
 
 ### configure apn
 
-Configurere the APN to which the Wappsto:bit connects when on cellular network.
+Configure the APN to which the Wappsto:bit connects when on cellular network.
 
 ```sig
 wappsto.configureApn("apn")

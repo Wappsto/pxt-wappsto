@@ -645,7 +645,7 @@ namespace wappsto {
     }
 
     /**
-     * Configurere the SSID to which the Wappsto:bit connects when on Wi-Fi network.
+     * Configure the SSID to which the Wappsto:bit connects when on Wi-Fi network.
      * @param ssid The SSID to connect to
      * @param password The Wi-Fi password
      */
@@ -659,7 +659,7 @@ namespace wappsto {
     }
 
     /**
-     * Configurere the APN to which the Wappsto:bit connects when on cellular network.
+     * Configure the APN to which the Wappsto:bit connects when on cellular network.
      * @param apn The APN string
      */
     //% blockId="wapp_configure_apn"
@@ -672,7 +672,7 @@ namespace wappsto {
     }
 
     /**
-     * Send a sleep command.
+     * Put the Wappsto:bit in sleep mode.
      */
     //% weight=40
     //% advanced=true
@@ -684,7 +684,7 @@ namespace wappsto {
     }
 
     /**
-     * Send a wake signal.
+     * Wake the Wappsto:bit from sleep mode.
      */
     //% weight=40
     //% advanced=true
