@@ -9,3 +9,4 @@ pxt_modules
 .header.json
 *~
 *.sublime-workspace
+.DS_Store
