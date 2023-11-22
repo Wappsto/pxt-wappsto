@@ -10,12 +10,14 @@
         "wappsto.ts",
         "microbit.ts",
         "calliope.ts",
-        "_locales/en/pxt-wappsto-jsdoc-strings.json",
-        "_locales/en/pxt-wappsto-strings.json",
         "_locales/da/pxt-wappsto-jsdoc-strings.json",
         "_locales/da/pxt-wappsto-strings.json",
         "_locales/de/pxt-wappsto-jsdoc-strings.json",
-        "_locales/de/pxt-wappsto-strings.json"
+        "_locales/de/pxt-wappsto-strings.json",
+        "_locales/ca/pxt-wappsto-jsdoc-strings.json",
+        "_locales/ca/pxt-wappsto-strings.json",
+        "_locales/es/pxt-wappsto-jsdoc-strings.json",
+        "_locales/es/pxt-wappsto-strings.json"
     ],
     "testFiles": [
         "wappstotest.ts"

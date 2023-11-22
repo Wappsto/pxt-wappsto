@@ -1,6 +1,5 @@
 {
   "wappsto": "MakeCode-Erweiterung für das Seluxit Wappsto:bit IoT-Erweiterungsmodul.",
-  "wappsto.carrier": "Eingangsbaustein, der den Netzwerknamen zurückgibt, mit dem das Wappsto:bit verbunden ist.",
   "wappsto.configureApn": "Konfigurieren Sie den APN, mit dem sich das Wappsto:bit verbindet, wenn es sich im Mobilfunknetz befindet.",
   "wappsto.configureApn|param|apn": "Der APN-String",
   "wappsto.configureName": "Stellt die Verbindung zu Wappsto über Wappsto:bit her.",

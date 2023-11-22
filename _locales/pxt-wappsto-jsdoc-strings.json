@@ -1,6 +1,7 @@
 {
   "wappsto": "MakeCode extension for the Seluxit Wappsto:bit extension module.",
-  "wappsto.carrier": "Input block returning the network name of which the Wappsto:bit is connected to.",
+  "wappsto.commandSleep": "Put the Wappsto:bit in sleep mode.",
+  "wappsto.commandWake": "Wake the Wappsto:bit from sleep mode.",
   "wappsto.configureApn": "Configure the APN to which the Wappsto:bit connects when on cellular network.",
   "wappsto.configureApn|param|apn": "The APN string",
   "wappsto.configureName": "Configure the name of your Micro:bit on Wappsto.",
@@ -41,7 +42,5 @@
   "wappsto.sendStringToWappsto|param|valueID": "The id of the value to send",
   "wappsto.signalQuality": "Input block returning the signal quality of the network link [0-100%].",
   "wappsto.time": "Input block returning the Wappsto:bit UTC time in seconds.",
-  "wappsto.uptime": "Input block returning the Wappsto:bit uptime. I.e. time in seconds since last power cycle.",
-  "wappsto.commandSleep": "Put the Wappsto:bit in sleep mode",
-  "wappsto.commandWake": "Wake the Wappsto:bit from sleep mode"
+  "wappsto.uptime": "Input block returning the Wappsto:bit uptime. I.e. time in seconds since last power cycle."
 }

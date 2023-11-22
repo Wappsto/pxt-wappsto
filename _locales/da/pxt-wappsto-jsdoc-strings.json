@@ -1,6 +1,5 @@
 {
   "wappsto": "MakeCode-udvidelse til Seluxit Wappsto:bit IoT modulet.",
-  "wappsto.carrier": "Inputblok, der returnerer det netværksnavn, som Wappsto:bit er tilsluttet.",
   "wappsto.configureApn": "Konfigurer det APN, som Wappsto:bit forbinder til på mobilnetværk.",
   "wappsto.configureApn|param|apn": "APN-strengen, f.eks. telenor.iot",
   "wappsto.configureName": "Opretter forbindelse til Wappsto ved hjælp af Wappsto:bit.",

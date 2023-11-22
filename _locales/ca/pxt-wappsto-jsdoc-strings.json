@@ -1,6 +1,5 @@
 {
   "wappsto": "Extensió MakeCode per al mòdul d'extensió Seluxit Wappsto:bit.",
-  "wappsto.carrier": "Bloc d'entrada que retorna el nom de xarxa a la qual està connectat Wappsto:bit.",
   "wappsto.configureApn": "Configura l'APN al qual es connecta Wappsto:bit quan estàs a la xarxa mòbil.",
   "wappsto.configureApn|param|apn": "Cadena APN",
   "wappsto.configureName": "Configura el nom del vostre Micro:bit a Wappsto.",

@@ -1,6 +1,5 @@
 {
   "wappsto": "Extensión MakeCode para el módulo de extensión Seluxit Wappsto:bit.",
-  "wappsto.carrier": "Bloque de entrada que devuelve el nombre de la red a la que está conectado Wappsto:bit.",
   "wappsto.configureApn": "Configura el APN al que se conecta Wappsto:bit cuando está en la red móvil.",
   "wappsto.configureApn|param|apn": "Cadena APN",
   "wappsto.configureName": "Configura el nombre de tu Micro:bit en Wappsto.",
