@@ -221,14 +221,6 @@ namespace wappsto {
         pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
     }
 
-    /**
-     * Helper function, add string to buffer
-     */
-    function stringToBufferAppend(str: string, buff: Buffer, offset: number) : void {
-        for (let i = 0; i < str.length; i++) {
-            buff.setNumber(NumberFormat.UInt8LE, offset+i, str.charCodeAt(i));
-        }
-    }
 
     function addHeader(buff: Buffer, command_id: WappstoCommand, msg_len: number): void {
         buff.setNumber(NumberFormat.UInt8LE, BEGIN_TAG_A_INDEX, HEADER_A);
@@ -267,7 +259,7 @@ namespace wappsto {
         addHeader(writeBuffer, WappstoCommand.SetApn, bufferLength);
 
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, apn.length);
-        stringToBufferAppend(apn, writeBuffer, REQ_HEADER_LEN + 1);
+        toUTF8BufferAppend(apn, writeBuffer, REQ_HEADER_LEN + 1);
 
         basic.pause(50); // allow microbit i2c ring buffer to empty
         pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
@@ -283,9 +275,9 @@ namespace wappsto {
         addHeader(writeBuffer, WappstoCommand.SetWifi, bufferLength);
 
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, ssid.length);
-        stringToBufferAppend(ssid, writeBuffer, REQ_HEADER_LEN + 1);
+        toUTF8BufferAppend(ssid, writeBuffer, REQ_HEADER_LEN + 1);
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN + 1 + ssid.length, password.length);
-        stringToBufferAppend(password, writeBuffer, REQ_HEADER_LEN + 2 + ssid.length);
+        toUTF8BufferAppend(password, writeBuffer, REQ_HEADER_LEN + 2 + ssid.length);
 
         basic.pause(50); // allow microbit i2c ring buffer to empty
         pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
@@ -392,7 +384,7 @@ namespace wappsto {
         let writeBuffer = pins.createBuffer(bufLength);
         addHeader(writeBuffer, WappstoCommand.SetDeviceName, bufLength);
         writeBuffer.setNumber(NumberFormat.UInt8LE, REQ_HEADER_LEN, deviceId);
-        stringToBufferAppend(name, writeBuffer, REQ_HEADER_LEN + 1);
+        toUTF8BufferAppend(name, writeBuffer, REQ_HEADER_LEN + 1);
 
         writeBufferI2c(writeBuffer);
     }
