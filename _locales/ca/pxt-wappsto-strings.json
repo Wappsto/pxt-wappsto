@@ -21,7 +21,7 @@
   "wappsto.latitude|block": "latitud GPS",
   "wappsto.longitude|block": "longitud GPS",
   "wappsto.onNumberEvent|block": "al valor de nombre %valueID rebut de Wappsto",
-  "wappsto.onStringEvent|block": "al valor de cadena %valueID recibut de Wappsto",
+  "wappsto.onStringEvent|block": "al valor de cadena %valueID rebut de Wappsto",
   "wappsto.sendCleanToWappsto|block": "envia una sol·licitud per esborrar Wappsto",
   "wappsto.sendNumberToWappsto|block": "envia el número %input a Wappsto Número Valor %valueID %behaviour",
   "wappsto.sendStringToWappsto|block": "envia la cadena %input a Wappsto String Value %valueID %behaviour",
