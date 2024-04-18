@@ -109,7 +109,6 @@ namespace wappsto {
         } else if (ready == 0) {
             wappstoConnected = false;
         }
-
     }
 
     /**
@@ -127,9 +126,7 @@ namespace wappsto {
 
         initialized = true;
         deviceName = name;
-        if (wappstoConnected) {
-            sendDeviceToWappsto(deviceName);
-        }
+        sendDeviceToWappsto(deviceName);
 
         control.inBackground(() => {
             let index = 0;
@@ -193,7 +190,6 @@ namespace wappsto {
             }
         });
 
-
         basic.pause(100);
     }
 
@@ -206,8 +202,6 @@ namespace wappsto {
     }
 
     function writeBufferI2c(writeBuffer: Buffer): void {
-        initialize(deviceName);
-
         // Drop messages when wappsto:bit is not ready
         if (!wappstoConnected) {
             return;
@@ -220,7 +214,6 @@ namespace wappsto {
         basic.pause(50); // allow microbit i2c ring buffer to empty
         pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
     }
-
 
     function addHeader(buff: Buffer, command_id: WappstoCommand, msg_len: number): void {
         buff.setNumber(NumberFormat.UInt8LE, BEGIN_TAG_A_INDEX, HEADER_A);
@@ -263,7 +256,6 @@ namespace wappsto {
 
         basic.pause(50); // allow microbit i2c ring buffer to empty
         pins.i2cWriteBuffer(i2cDevice, writeBuffer, false);
-
     }
 
     /**
@@ -287,6 +279,7 @@ namespace wappsto {
      * Sends a byte simple command to wappsto:bit (no data)
      */
     function writeSimpleEnumCommand(cmd: WappstoCommand): void {
+        initialize(deviceName);
         switch(cmd) {
         case WappstoCommand.SetDeviceName:
         case WappstoCommand.SetValueName:
@@ -470,6 +463,7 @@ namespace wappsto {
     //% type.defl=WappstoValueTemplate.Number
     //% group="Data model"
     export function configureValue(valueID: number, name: string, type: WappstoValueTemplate): void {
+        initialize(deviceName);
         while(!wappstoConnected) {
             basic.pause(500); // block setup till wappsto:bit is online
         }
@@ -526,6 +520,7 @@ namespace wappsto {
     //% advanced=true
     //% group="Data model"
     export function configureNumberValue(valueID: number, name: string, type: string, min: number = 0, max: number = 255, step: number = 1, unit: string = null): void {
+        initialize(deviceName);
         checkRange(valueID, 1, 15);
         if (unit == null) {
             unit = "";
@@ -554,6 +549,7 @@ namespace wappsto {
     //% name.defl="MyString" type.defl="string"
     //% group="Data model"
     export function configureStringValue(valueID: number, name: string, type: string): void {
+        initialize(deviceName);
         checkRange(valueID, 16, 20);
 
         while(!wappstoConnected) {
@@ -576,6 +572,7 @@ namespace wappsto {
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
     export function sendNumberToWappsto(input: number, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
+        initialize(deviceName);
         checkRange(valueID, 1, 15);
         writeValueUpdate(1, valueID, input.toString(), behaviour);
     }
@@ -592,6 +589,7 @@ namespace wappsto {
     //% behaviour.defl=WappstoTransmit.OnChange
     //% group="Wappsto basic flow"
     export function sendStringToWappsto(input: string, valueID: number, behaviour: WappstoTransmit = WappstoTransmit.OnChange): void {
+        initialize(deviceName);
         checkRange(valueID, 16, 20);
         writeValueUpdate(1, valueID, input, behaviour);
     }
@@ -607,6 +605,7 @@ namespace wappsto {
     //% valueID.min=1 valueID.max=15 valueID.defl=1
     //% group="Wappsto basic flow"
     export function onNumberEvent(valueID: number, handler: (receivedNumber: number) => void) {
+        initialize(deviceName);
         checkRange(valueID, 1, 15);
 
         // Create a value on Wappsto if it is not there, so that the user can control it
@@ -627,6 +626,7 @@ namespace wappsto {
     //% valueID.min=16 valueID.max=20 valueID.defl=16
     //% group="Wappsto basic flow"
     export function onStringEvent(valueID: number, handler: (receivedString: string) => void) {
+        initialize(deviceName);
         checkRange(valueID, 16, 20);
 
         // Create a value on Wappsto if it is not there, so that the user can control it
@@ -647,6 +647,7 @@ namespace wappsto {
     //% group="Wappsto:bit configuration"
     //% advanced=true
     export function configureWifi(ssid: string, pass: string): void {
+        initialize(deviceName);
         writeWifi(ssid, pass);
     }
 
@@ -660,6 +661,7 @@ namespace wappsto {
     //% group="Wappsto:bit configuration"
     //% advanced=true
     export function configureApn(apn: string): void {
+        initialize(deviceName);
         writeApn(apn);
     }
 
